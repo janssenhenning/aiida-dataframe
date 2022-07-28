@@ -27,20 +27,38 @@ class DataFrameJsonableWrapper:
 
     def as_dict(self) -> dict[str, Any]:
         """
-        Serialize the Dataframe as a jsn serializable dictionary
+        Serialize the Dataframe as a json serializable dictionary
         """
+        multiindex = False
+        if isinstance(self.df.columns, pd.MultiIndex):
+            self.df.columns = self.df.columns.to_flat_index()
+            multiindex = True
+
         json_string = self.df.to_json(orient=self.orient)
-        return json.loads(json_string)
+        d = json.loads(json_string)
+        d["_orient"] = self.orient
+        d["_multindex"] = multiindex
+        if "columns" not in d:
+            d["columns"] = list(self.df.columns)
+        if "index" not in d:
+            d["index"] = list(self.df.index)
+        return d
 
     @classmethod
-    def from_dict(
-        cls, d: dict[str, Any], orient: str = "table"
-    ) -> DataFrameJsonableWrapper:
+    def from_dict(cls, d: dict[str, Any]) -> DataFrameJsonableWrapper:
         """
         Construct a pandas Dataframe from a dictionary
         """
+        orient = d.pop("_orient", "table")
+        multiindex = d.pop("_multiindex", False)
+        d.pop("columns", None)
+        d.pop("index", None)
+
         json_string = json.dumps(d)
-        return cls(pd.read_json(json_string, orient=orient), orient=orient)
+        df = pd.read_json(json_string, orient=orient)
+        if multiindex:
+            df.columns = pd.MultiIndex.from_tuples(df.columns)
+        return cls(df, orient=orient)
 
 
 class PandasFrameData(JsonableData):
