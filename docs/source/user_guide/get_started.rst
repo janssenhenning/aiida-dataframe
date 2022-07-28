@@ -16,3 +16,34 @@ Use the following commands to install the plugin::
     #pip install -e .[pre-commit,testing] # install extras for more features
     verdi quicksetup  # better to set up a new profile
     verdi plugin list aiida.data  # should now show your data plugins
+
+Usage
+++++++
+
+The plugin provides a Data plugin :py:class:`~aiida_dataframe.data.dataframe.PandasFrameData`
+that is able to serialize and deserialize :py:class:`~pandas.DataFrame` objects for the AiiDA
+database
+
+Example for storing a DataFrame::
+
+   import pandas as pd
+   import numpy as np
+   from aiida.plugins import DataFactory
+
+   PandasFrameData = DataFactory('dataframe.frame')
+   df = pd.DataFrame(
+        {
+            "A": 1.0,
+            "B": pd.Timestamp("20130102"),
+            "C": pd.Series(1, index=list(range(4)), dtype="float32"),
+            "D": np.array([3] * 4, dtype="int32"),
+            "E": pd.Categorical(["test", "train", "test", "train"]),
+            "F": "foo",
+        }
+    )
+   df_node = PandasFrameData(df)
+   df_node.store()
+
+The underlying DataFrame is accessible using the `df` property of the Data node::
+
+   print(df_node.df.head())
