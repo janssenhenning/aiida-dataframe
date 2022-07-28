@@ -45,7 +45,7 @@ class TestDataCli:
         result = self.runner.invoke(
             export, [str(self.df_node.pk)], catch_exceptions=False
         )
-        file_regression.check(result.output, extension=".csv")
+        file_regression.check(result.output.strip("\n"), extension=".csv")
 
     def test_dataframe_show(self, file_regression):
         """Test 'verdi dataframe show'

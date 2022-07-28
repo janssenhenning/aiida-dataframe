@@ -44,6 +44,7 @@ extensions = [
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3", None),
     "aiida": ("https://aiida.readthedocs.io/projects/aiida-core/en/latest", None),
+    "pandas": ("http://pandas.pydata.org/pandas-docs/dev", None),
 }
 
 # Add any paths that contain templates here, relative to this directory.
