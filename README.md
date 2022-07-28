@@ -79,10 +79,10 @@ MIT
 henning.janssen@gmx.net
 
 
-[ci-badge]: https://github.com/janssenhenning/aiida-dataframe/workflows/ci/badge.svg?branch=master
+[ci-badge]: https://github.com/janssenhenning/aiida-dataframe/workflows/ci/badge.svg?branch=main
 [ci-link]: https://github.com/janssenhenning/aiida-dataframe/actions
-[cov-badge]: https://coveralls.io/repos/github/janssenhenning/aiida-dataframe/badge.svg?branch=master
-[cov-link]: https://coveralls.io/github/janssenhenning/aiida-dataframe?branch=master
+[cov-badge]: https://coveralls.io/repos/github/janssenhenning/aiida-dataframe/badge.svg?branch=main
+[cov-link]: https://coveralls.io/github/janssenhenning/aiida-dataframe?branch=main
 [docs-badge]: https://readthedocs.org/projects/aiida-dataframe/badge
 [docs-link]: http://aiida-dataframe.readthedocs.io/
 [pypi-badge]: https://badge.fury.io/py/aiida-dataframe.svg
