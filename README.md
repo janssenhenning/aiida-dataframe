@@ -65,6 +65,12 @@ pytest -v  # discover and run all tests
 
 See the [developer guide](http://aiida-dataframe.readthedocs.io/en/latest/developer_guide/index.html) for more information.
 
+## TODO:
+
+- Add calcfunctions for common DataFrame operations to track provenance
+  - groupby
+  - ...
+
 ## License
 
 MIT
