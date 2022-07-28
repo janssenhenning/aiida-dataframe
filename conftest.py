@@ -1,7 +1,7 @@
 """pytest fixtures for simplified testing."""
 import pytest
 
-pytest_plugins = ["aiida.manage.tests.pytest_fixtures"]
+pytest_plugins = ["aiida.manage.tests.pytest_fixtures", "pytest_regressions"]
 
 
 @pytest.fixture(scope="function", autouse=True)

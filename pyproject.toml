@@ -23,7 +23,8 @@ keywords = ["aiida", "plugin"]
 requires-python = ">=3.8"
 dependencies = [
     "aiida-core>=2.0,<3",
-    "pandas"
+    "pandas",
+    "tabulate"
 ]
 
 [project.urls]
@@ -35,7 +36,8 @@ testing = [
     "wheel~=0.31",
     "coverage[toml]",
     "pytest~=6.0",
-    "pytest-cov"
+    "pytest-cov",
+    "pytest-regressions"
 ]
 pre-commit = [
     "pre-commit~=2.2",

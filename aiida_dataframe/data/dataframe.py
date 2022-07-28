@@ -26,6 +26,9 @@ class DataFrameJsonableWrapper:
         self.orient = orient
 
     def as_dict(self) -> dict[str, Any]:
+        """
+        Serialize the Dataframe as a jsn serializable dictionary
+        """
         json_string = self.df.to_json(orient=self.orient)
         return json.loads(json_string)
 
@@ -33,6 +36,9 @@ class DataFrameJsonableWrapper:
     def from_dict(
         cls, d: dict[str, Any], orient: str = "table"
     ) -> DataFrameJsonableWrapper:
+        """
+        Construct a pandas Dataframe from a dictionary
+        """
         json_string = json.dumps(d)
         return cls(pd.read_json(json_string, orient=orient), orient=orient)
 
