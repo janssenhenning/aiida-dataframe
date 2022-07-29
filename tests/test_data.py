@@ -79,7 +79,7 @@ def test_multiindex_index_roundtrip():
 
     loaded = load_node(node.pk)
     assert loaded is not node
-    assert loaded.df.equals(df)
+    assert_frame_equal(loaded.df, df)
 
 
 def test_query_columns():
