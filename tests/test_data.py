@@ -192,6 +192,42 @@ def test_non_serializable():
         PandasFrameData(df)
 
 
+def test_nan_values():
+    """
+    Make sure that NaNs are eliminated (transformed to None)
+    before being stored in the Database
+    """
+
+    df = pd.DataFrame(
+        {
+            "None": [
+                np.NAN,
+                float("NaN"),
+                np.inf,
+                float("inf"),
+            ],
+        }
+    )
+
+    # The NaNs are reconstructed only in the final Dataframe
+    # by pandas noticing the None values in a numeric column
+    df_after = pd.DataFrame(
+        {
+            "None": [float("NaN"), float("NaN"), float("NaN"), float("NaN")],
+        }
+    )
+
+    PandasFrameData = DataFactory("dataframe.frame")
+    node = PandasFrameData(df)
+
+    # Make sure that NaNs and infs already disappeared during this step
+    assert all(row["None"] is None for row in node.obj.as_dict()["data"])
+    node.store()
+
+    loaded = load_node(node.pk)
+    assert_frame_equal(loaded.df, df_after)
+
+
 def test_wrong_inputs():
     """
     Wrong inputs given to __init__
