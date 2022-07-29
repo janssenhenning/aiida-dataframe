@@ -2,8 +2,10 @@
 
 import numpy as np
 import pandas as pd
+from pandas.testing import assert_frame_equal
+import pytest
 
-from aiida.orm import QueryBuilder
+from aiida.orm import QueryBuilder, load_node
 from aiida.plugins import DataFactory
 
 
@@ -18,19 +20,21 @@ def test_roundtrip():
         {
             "A": 1.0,
             "B": pd.Timestamp("20130102"),
-            "C": pd.Series(1, index=list(range(4)), dtype="float32"),
-            "D": np.array([3] * 4, dtype="int32"),
+            "C": pd.Series(1, index=list(range(4)), dtype="float64"),
+            "D": np.array([3] * 4, dtype="int64"),
             "E": pd.Categorical(["test", "train", "test", "train"]),
             "F": "foo",
         }
     )
 
     PandasFrameData = DataFactory("dataframe.frame")
-    df_node = PandasFrameData(df)
-    df_node.store()
+    node = PandasFrameData(df)
+    node.store()
+    assert node.is_stored
 
-    df_stored = df_node.df
-    assert df.equals(df_stored)
+    loaded = load_node(node.pk)
+    assert loaded is not node
+    assert_frame_equal(loaded.df, df)
 
 
 def test_multiindex_columns_roundtrip():
@@ -51,11 +55,13 @@ def test_multiindex_columns_roundtrip():
     df.columns = pd.MultiIndex.from_tuples([tuple(c.split("_")) for c in df.columns])
 
     PandasFrameData = DataFactory("dataframe.frame")
-    df_node = PandasFrameData(df)
-    df_node.store()
+    node = PandasFrameData(df)
+    node.store()
+    assert node.is_stored
 
-    df_stored = df_node.df
-    assert df.equals(df_stored)
+    loaded = load_node(node.pk)
+    assert loaded is not node
+    assert_frame_equal(loaded.df, df)
 
 
 def test_multiindex_index_roundtrip():
@@ -67,11 +73,13 @@ def test_multiindex_index_roundtrip():
     df = pd.DataFrame([11, 22, 33, 44, 55], index, ["MyData"])
 
     PandasFrameData = DataFactory("dataframe.frame")
-    df_node = PandasFrameData(df)
-    df_node.store()
+    node = PandasFrameData(df)
+    node.store()
+    assert node.is_stored
 
-    df_stored = df_node.df
-    assert df.equals(df_stored)
+    loaded = load_node(node.pk)
+    assert loaded is not node
+    assert loaded.df.equals(df)
 
 
 def test_query_columns():
@@ -156,3 +164,44 @@ def test_query_index():
 
     assert len(query.all()) == 1
     assert query.one()[0].uuid == df_node_1.uuid
+
+
+def test_non_serializable():
+    """
+    Make sure that non-serializable things are caught
+    early before storing the Dataframe
+    """
+
+    # Example from pandas Docs
+    df = pd.DataFrame(
+        {
+            "A": 1.0,
+            "B": pd.Timestamp("20130102"),
+            "C": pd.Series(1, index=list(range(4)), dtype="float32"),
+            "D": np.array([3] * 4, dtype="int32"),
+            "E": pd.Categorical(["test", "train", "test", "train"]),
+            "F": "foo",
+            "G": 1 + 2j,
+        }
+    )
+
+    PandasFrameData = DataFactory("dataframe.frame")
+
+    # Complex numbers can not be serialized/deserialized in a consistent manner
+    with pytest.raises(TypeError):
+        PandasFrameData(df)
+
+
+def test_wrong_inputs():
+    """
+    Wrong inputs given to __init__
+    """
+
+    PandasFrameData = DataFactory("dataframe.frame")
+    # No data
+    with pytest.raises(TypeError):
+        PandasFrameData()
+
+    # Wrong type
+    with pytest.raises(TypeError):
+        PandasFrameData([1, 2, 3])
