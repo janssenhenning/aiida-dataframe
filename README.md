@@ -70,6 +70,9 @@ See the [developer guide](http://aiida-dataframe.readthedocs.io/en/latest/develo
 - Add calcfunctions for common DataFrame operations to track provenance
   - groupby
   - ...
+- Large DataFrames might be better stored in the file repository
+  - Investigate performance of different file serializations
+  - Keep two Data classes to let users choose where to store the data?
 
 ## License
 
