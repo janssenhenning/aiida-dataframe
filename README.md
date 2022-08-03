@@ -73,6 +73,8 @@ See the [developer guide](http://aiida-dataframe.readthedocs.io/en/latest/develo
 - Large DataFrames might be better stored in the file repository
   - Investigate performance of different file serializations
   - Keep two Data classes to let users choose where to store the data?
+- Should the `df` property have a setter to mutate the DataFrame?
+  - Raise when the node is already stored
 
 ## License
 

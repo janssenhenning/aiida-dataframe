@@ -47,3 +47,14 @@ Example for storing a DataFrame::
 The underlying DataFrame is accessible using the `df` property of the Data node::
 
    print(df_node.df.head())
+
+.. warning:: Note on Mutability of DataFrame objects
+
+    Methods on :py:class:`pandas.DataFrame` objects return a new instance of the
+    object and do not mutate the original instance. This means that as soon as the
+    :py:class:`~aiida_dataframe.data.dataframe.PandasFrameData` is initialized the associated
+    DataFrame can essentially not be changed, even if the node is not yet stored.
+
+    Some methods of `pandas` have an `in_place` option to mutate the original. This is
+    explicitly not supported if the :py:class:`pandas.DataFrame` is already associated
+    with a node the changes will be ignored if you load it from the database
