@@ -48,7 +48,13 @@ jobs:
       env:
         # show timings of tests
         PYTEST_ADDOPTS: "--durations=0"
-      run: pytest --cov aiida_dataframe --cov-append .
+      run: pytest --cov aiida_dataframe --cov-report=xml --cov-append .
+
+    - name: Upload code coverage report
+      run: |
+        pip install codecov
+        codecov
+
 
   docs:
     runs-on: ubuntu-latest
