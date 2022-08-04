@@ -17,13 +17,11 @@ from aiida.orm import SinglefileData
 
 class PandasFrameHDF5Data(SinglefileData):
     """
-    Data plugin for pandas DataFrame objects. Dataframes are serializaed to Hdf5
-    using the :py:meth:`~pandas.DataFrame.to_hdf5()` method  and stored in the
-    file repository and are deserialized using :py:func:`~pandas.read_hdf5()`
+    Data plugin for pandas DataFrame objects. Dataframes are serialized to Hdf5
+    using the :py:meth:`~pandas.DataFrame.to_hdf()` method  and stored in the
+    file repository and are deserialized using :py:func:`~pandas.read_hdf()`
 
     The whole DataFrame can be retrieved by using the :py:meth:`df` property
-    Only parts of the DataFrame can be retrieved by using the :py:meth:`select()` method
-
     The names of columns and indices are stored in attributes to be queryable through
     the database
 
