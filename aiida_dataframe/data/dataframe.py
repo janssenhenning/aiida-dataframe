@@ -32,6 +32,7 @@ class DataFrameJsonableWrapper:
         Serialize the Dataframe as a json serializable dictionary
         """
         multiindex = False
+        columns = self.df.columns
         if isinstance(self.df.columns, pd.MultiIndex):
             columns = self.df.columns.to_flat_index()
             self.df.columns = [self.COLUMN_SEPARATOR.join(col) for col in columns]
@@ -51,7 +52,7 @@ class DataFrameJsonableWrapper:
         d["_orient"] = self.orient
         d["_multiindex"] = multiindex
         if "columns" not in d:
-            d["columns"] = list(self.df.columns)
+            d["columns"] = list(columns)
         if "index" not in d:
             d["index"] = list(self.df.index)
         return d

@@ -9,7 +9,14 @@ from aiida.orm import QueryBuilder, load_node
 from aiida.plugins import DataFactory
 
 
-def test_roundtrip():
+@pytest.mark.parametrize(
+    "entry_point",
+    (
+        "dataframe.frame",
+        "dataframe.hdf5",
+    ),
+)
+def test_roundtrip(entry_point):
     """
     Simple test of storing a Dataframe in the database and ensuring
     the contents stay the same after retrieving it from the DataBase
@@ -27,7 +34,7 @@ def test_roundtrip():
         }
     )
 
-    PandasFrameData = DataFactory("dataframe.frame")
+    PandasFrameData = DataFactory(entry_point)
     node = PandasFrameData(df)
     node.store()
     assert node.is_stored
@@ -37,7 +44,14 @@ def test_roundtrip():
     assert_frame_equal(loaded.df, df)
 
 
-def test_multiindex_columns_roundtrip():
+@pytest.mark.parametrize(
+    "entry_point",
+    (
+        "dataframe.frame",
+        "dataframe.hdf5",
+    ),
+)
+def test_multiindex_columns_roundtrip(entry_point):
     """
     Test that MultiIndex columns are correctly reconstructed
     """
@@ -54,7 +68,7 @@ def test_multiindex_columns_roundtrip():
     df = df.set_index("row")
     df.columns = pd.MultiIndex.from_tuples([tuple(c.split("_")) for c in df.columns])
 
-    PandasFrameData = DataFactory("dataframe.frame")
+    PandasFrameData = DataFactory(entry_point)
     node = PandasFrameData(df)
     node.store()
     assert node.is_stored
@@ -64,7 +78,14 @@ def test_multiindex_columns_roundtrip():
     assert_frame_equal(loaded.df, df)
 
 
-def test_multiindex_index_roundtrip():
+@pytest.mark.parametrize(
+    "entry_point",
+    (
+        "dataframe.frame",
+        "dataframe.hdf5",
+    ),
+)
+def test_multiindex_index_roundtrip(entry_point):
     """
     Test that MultiIndex indices are correctly reconstructed
     """
@@ -72,7 +93,7 @@ def test_multiindex_index_roundtrip():
     index = pd.MultiIndex.from_tuples(coords)
     df = pd.DataFrame([11, 22, 33, 44, 55], index, ["MyData"])
 
-    PandasFrameData = DataFactory("dataframe.frame")
+    PandasFrameData = DataFactory(entry_point)
     node = PandasFrameData(df)
     node.store()
     assert node.is_stored
@@ -82,12 +103,19 @@ def test_multiindex_index_roundtrip():
     assert_frame_equal(loaded.df, df)
 
 
-def test_query_columns():
+@pytest.mark.parametrize(
+    "entry_point",
+    (
+        "dataframe.frame",
+        "dataframe.hdf5",
+    ),
+)
+def test_query_columns(entry_point):
     """
     Test querying for DataFrames containing specific column names
     """
 
-    PandasFrameData = DataFactory("dataframe.frame")
+    PandasFrameData = DataFactory(entry_point)
 
     # Example from pandas Docs
     df = pd.DataFrame(
@@ -126,7 +154,67 @@ def test_query_columns():
     assert query.one()[0].uuid == df_node_1.uuid
 
 
-def test_query_index():
+@pytest.mark.parametrize(
+    "entry_point",
+    (
+        "dataframe.frame",
+        "dataframe.hdf5",
+    ),
+)
+def test_query_multiindex_columns(entry_point):
+    """
+    Test querying for DataFrames containing specific column names
+    """
+
+    PandasFrameData = DataFactory(entry_point)
+
+    # Example from pandas Docs
+    df = pd.DataFrame(
+        {
+            "row": [0, 1, 2],
+            "One_X": [1.1, 1.1, 1.1],
+            "One_Y": [1.2, 1.2, 1.2],
+            "Two_X": [1.11, 1.11, 1.11],
+            "Two_Y": [1.22, 1.22, 1.22],
+        }
+    )
+    df = df.set_index("row")
+    df.columns = pd.MultiIndex.from_tuples([tuple(c.split("_")) for c in df.columns])
+
+    df_node_1 = PandasFrameData(df)
+    df_node_1.store()
+
+    df = pd.DataFrame(
+        {
+            "row": [0, 1, 2],
+            "OneRename_X": [1.1, 1.1, 1.1],
+            "One_Y": [1.2, 1.2, 1.2],
+            "Two_X": [1.11, 1.11, 1.11],
+            "Two_Y": [1.22, 1.22, 1.22],
+        }
+    )
+    df = df.set_index("row")
+    df.columns = pd.MultiIndex.from_tuples([tuple(c.split("_")) for c in df.columns])
+
+    df_node_2 = PandasFrameData(df)
+    df_node_2.store()
+
+    query = QueryBuilder().append(
+        PandasFrameData, filters={"attributes.columns": {"contains": [["One", "X"]]}}
+    )
+
+    assert len(query.all()) == 1
+    assert query.one()[0].uuid == df_node_1.uuid
+
+
+@pytest.mark.parametrize(
+    "entry_point",
+    (
+        "dataframe.frame",
+        "dataframe.hdf5",
+    ),
+)
+def test_query_index(entry_point):
     """
     Test querying for DataFrames on the index attribute
     """
@@ -140,7 +228,7 @@ def test_query_index():
         }
     )
     df = df.set_index("row")
-    PandasFrameData = DataFactory("dataframe.frame")
+    PandasFrameData = DataFactory(entry_point)
     df_node_1 = PandasFrameData(df)
     df_node_1.store()
 
@@ -166,7 +254,8 @@ def test_query_index():
     assert query.one()[0].uuid == df_node_1.uuid
 
 
-def test_non_serializable():
+@pytest.mark.parametrize("entry_point", ("dataframe.frame",))
+def test_non_serializable(entry_point):
     """
     Make sure that non-serializable things are caught
     early before storing the Dataframe
@@ -185,14 +274,73 @@ def test_non_serializable():
         }
     )
 
-    PandasFrameData = DataFactory("dataframe.frame")
+    PandasFrameData = DataFactory(entry_point)
 
     # Complex numbers can not be serialized/deserialized in a consistent manner
     with pytest.raises(TypeError):
         PandasFrameData(df)
 
 
-def test_nan_values():
+@pytest.mark.parametrize("entry_point", ("dataframe.hdf5",))
+def test_complex_hdf5(entry_point):
+    """
+    Make sure that non-serializable things are caught
+    early before storing the Dataframe
+    """
+
+    # Example from pandas Docs
+    df = pd.DataFrame(
+        {
+            "A": 1.0,
+            "B": pd.Timestamp("20130102"),
+            "C": pd.Series(1, index=list(range(4)), dtype="float32"),
+            "D": np.array([3] * 4, dtype="int32"),
+            "E": pd.Categorical(["test", "train", "test", "train"]),
+            "F": "foo",
+            "G": 1 + 2j,
+        }
+    )
+
+    PandasFrameData = DataFactory(entry_point)
+    node = PandasFrameData(df)
+    node.store()
+    assert node.is_stored
+
+    loaded = load_node(node.pk)
+    assert loaded is not node
+    assert_frame_equal(loaded.df, df)
+
+
+@pytest.mark.parametrize("entry_point", ("dataframe.hdf5",))
+def test_nan_values_hdf5(entry_point):
+    """
+    Make sure that NaNs are eliminated (transformed to None)
+    before being stored in the Database
+    """
+
+    df = pd.DataFrame(
+        {
+            "None": [
+                np.NAN,
+                float("NaN"),
+                np.inf,
+                float("inf"),
+            ],
+        }
+    )
+
+    PandasFrameData = DataFactory(entry_point)
+    node = PandasFrameData(df)
+    node.store()
+    assert node.is_stored
+
+    loaded = load_node(node.pk)
+    assert loaded is not node
+    assert_frame_equal(loaded.df, df)
+
+
+@pytest.mark.parametrize("entry_point", ("dataframe.frame",))
+def test_nan_values(entry_point):
     """
     Make sure that NaNs are eliminated (transformed to None)
     before being stored in the Database
@@ -217,7 +365,7 @@ def test_nan_values():
         }
     )
 
-    PandasFrameData = DataFactory("dataframe.frame")
+    PandasFrameData = DataFactory(entry_point)
     node = PandasFrameData(df)
 
     # Make sure that NaNs and infs already disappeared during this step
@@ -228,15 +376,22 @@ def test_nan_values():
     assert_frame_equal(loaded.df, df_after)
 
 
-def test_wrong_inputs():
+@pytest.mark.parametrize(
+    "entry_point",
+    (
+        "dataframe.frame",
+        "dataframe.hdf5",
+    ),
+)
+def test_wrong_inputs(entry_point):
     """
     Wrong inputs given to __init__
     """
 
-    PandasFrameData = DataFactory("dataframe.frame")
+    PandasFrameData = DataFactory(entry_point)
     # No data
     with pytest.raises(TypeError):
-        PandasFrameData()
+        PandasFrameData(None)
 
     # Wrong type
     with pytest.raises(TypeError):

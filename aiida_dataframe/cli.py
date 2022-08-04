@@ -31,9 +31,10 @@ def list_():  # pylint: disable=redefined-builtin
     Display all PandasFrameData nodes
     """
     PandasFrameData = DataFactory("dataframe.frame")
+    PandasFrameHDF5Data = DataFactory("dataframe.hdf5")
 
     qb = QueryBuilder()
-    qb.append(PandasFrameData)
+    qb.append([PandasFrameData, PandasFrameHDF5Data])
     results = qb.all()
 
     s = ""
@@ -47,7 +48,9 @@ def list_():  # pylint: disable=redefined-builtin
 @click.argument(
     "node",
     metavar="IDENTIFIER",
-    type=DataParamType(sub_classes=("aiida.data:dataframe.frame",)),
+    type=DataParamType(
+        sub_classes=("aiida.data:dataframe.frame", "aiida.data:dataframe.hdf5")
+    ),
 )
 @decorators.with_dbenv()
 def show(node):
@@ -59,7 +62,9 @@ def show(node):
 @click.argument(
     "node",
     metavar="IDENTIFIER",
-    type=DataParamType(sub_classes=("aiida.data:dataframe.frame",)),
+    type=DataParamType(
+        sub_classes=("aiida.data:dataframe.frame", "aiida.data:dataframe.hdf5")
+    ),
 )
 @click.option(
     "--outfile",

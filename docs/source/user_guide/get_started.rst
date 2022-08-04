@@ -22,7 +22,7 @@ Usage
 
 The plugin provides a Data plugin :py:class:`~aiida_dataframe.data.dataframe.PandasFrameData`
 that is able to serialize and deserialize :py:class:`~pandas.DataFrame` objects for the AiiDA
-database
+database (stored in JSON format)
 
 Example for storing a DataFrame::
 
@@ -47,6 +47,11 @@ Example for storing a DataFrame::
 The underlying DataFrame is accessible using the `df` property of the Data node::
 
    print(df_node.df.head())
+
+A second Data class :py:class:`~aiida_dataframe.data.dataframe_hdf5.PandasFrameHDF5Data`
+implements the same behaviour, however using this class the :py:class:`pandas.DataFrame`
+is stored in the AiiDA file repository as an `HDF5` file.
+The associated entry point is `'dataframe.hdf5'`
 
 .. warning:: Note on Mutability of DataFrame objects
 
