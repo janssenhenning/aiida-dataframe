@@ -22,7 +22,7 @@ classifiers = [
 keywords = ["aiida", "plugin"]
 requires-python = ">=3.8"
 dependencies = [
-    "aiida-core>=2.0,<3",
+    "aiida-core>=1.0,<3",
     "pandas",
     "tables",
     "tabulate"
@@ -54,7 +54,6 @@ docs = [
 
 [project.entry-points."aiida.data"]
 "dataframe.frame" = "aiida_dataframe.data.dataframe:PandasFrameData"
-"dataframe.hdf5" = "aiida_dataframe.data.dataframe_hdf5:PandasFrameHDF5Data"
 
 [project.entry-points."aiida.cmdline.data"]
 "dataframe" = "aiida_dataframe.cli:data_cli"
