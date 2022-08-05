@@ -3,7 +3,7 @@ Command line interface (cli) for aiida_dataframe.
 
 Register new commands either via the "console_scripts" entry point or plug them
 directly into the 'verdi' command by using AiiDA-specific entry points like
-"aiida.cmdline.data" (both in the setup.json file).
+"aiida.cmdline.data" (both in the pyproject.toml file).
 """
 import sys
 import tempfile
@@ -31,10 +31,9 @@ def list_():  # pylint: disable=redefined-builtin
     Display all PandasFrameData nodes
     """
     PandasFrameData = DataFactory("dataframe.frame")
-    PandasFrameHDF5Data = DataFactory("dataframe.hdf5")
 
     qb = QueryBuilder()
-    qb.append([PandasFrameData, PandasFrameHDF5Data])
+    qb.append(PandasFrameData)
     results = qb.all()
 
     s = ""
@@ -48,9 +47,7 @@ def list_():  # pylint: disable=redefined-builtin
 @click.argument(
     "node",
     metavar="IDENTIFIER",
-    type=DataParamType(
-        sub_classes=("aiida.data:dataframe.frame", "aiida.data:dataframe.hdf5")
-    ),
+    type=DataParamType(sub_classes=("aiida.data:dataframe.frame",)),
 )
 @decorators.with_dbenv()
 def show(node):
@@ -62,9 +59,7 @@ def show(node):
 @click.argument(
     "node",
     metavar="IDENTIFIER",
-    type=DataParamType(
-        sub_classes=("aiida.data:dataframe.frame", "aiida.data:dataframe.hdf5")
-    ),
+    type=DataParamType(sub_classes=("aiida.data:dataframe.frame",)),
 )
 @click.option(
     "--outfile",

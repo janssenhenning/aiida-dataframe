@@ -5,16 +5,14 @@ import pandas as pd
 from pandas.testing import assert_frame_equal
 import pytest
 
+from aiida.common import exceptions
 from aiida.orm import QueryBuilder, load_node
 from aiida.plugins import DataFactory
 
 
 @pytest.mark.parametrize(
     "entry_point",
-    (
-        "dataframe.frame",
-        "dataframe.hdf5",
-    ),
+    ("dataframe.frame",),
 )
 def test_roundtrip(entry_point):
     """
@@ -46,10 +44,7 @@ def test_roundtrip(entry_point):
 
 @pytest.mark.parametrize(
     "entry_point",
-    (
-        "dataframe.frame",
-        "dataframe.hdf5",
-    ),
+    ("dataframe.frame",),
 )
 def test_multiindex_columns_roundtrip(entry_point):
     """
@@ -80,10 +75,7 @@ def test_multiindex_columns_roundtrip(entry_point):
 
 @pytest.mark.parametrize(
     "entry_point",
-    (
-        "dataframe.frame",
-        "dataframe.hdf5",
-    ),
+    ("dataframe.frame",),
 )
 def test_multiindex_index_roundtrip(entry_point):
     """
@@ -105,10 +97,7 @@ def test_multiindex_index_roundtrip(entry_point):
 
 @pytest.mark.parametrize(
     "entry_point",
-    (
-        "dataframe.frame",
-        "dataframe.hdf5",
-    ),
+    ("dataframe.frame",),
 )
 def test_query_columns(entry_point):
     """
@@ -156,10 +145,7 @@ def test_query_columns(entry_point):
 
 @pytest.mark.parametrize(
     "entry_point",
-    (
-        "dataframe.frame",
-        "dataframe.hdf5",
-    ),
+    ("dataframe.frame",),
 )
 def test_query_multiindex_columns(entry_point):
     """
@@ -209,10 +195,7 @@ def test_query_multiindex_columns(entry_point):
 
 @pytest.mark.parametrize(
     "entry_point",
-    (
-        "dataframe.frame",
-        "dataframe.hdf5",
-    ),
+    ("dataframe.frame",),
 )
 def test_query_index(entry_point):
     """
@@ -255,33 +238,6 @@ def test_query_index(entry_point):
 
 
 @pytest.mark.parametrize("entry_point", ("dataframe.frame",))
-def test_non_serializable(entry_point):
-    """
-    Make sure that non-serializable things are caught
-    early before storing the Dataframe
-    """
-
-    # Example from pandas Docs
-    df = pd.DataFrame(
-        {
-            "A": 1.0,
-            "B": pd.Timestamp("20130102"),
-            "C": pd.Series(1, index=list(range(4)), dtype="float32"),
-            "D": np.array([3] * 4, dtype="int32"),
-            "E": pd.Categorical(["test", "train", "test", "train"]),
-            "F": "foo",
-            "G": 1 + 2j,
-        }
-    )
-
-    PandasFrameData = DataFactory(entry_point)
-
-    # Complex numbers can not be serialized/deserialized in a consistent manner
-    with pytest.raises(TypeError):
-        PandasFrameData(df)
-
-
-@pytest.mark.parametrize("entry_point", ("dataframe.hdf5",))
 def test_complex_hdf5(entry_point):
     """
     Make sure that non-serializable things are caught
@@ -311,7 +267,7 @@ def test_complex_hdf5(entry_point):
     assert_frame_equal(loaded.df, df)
 
 
-@pytest.mark.parametrize("entry_point", ("dataframe.hdf5",))
+@pytest.mark.parametrize("entry_point", ("dataframe.frame",))
 def test_nan_values_hdf5(entry_point):
     """
     Make sure that NaNs are eliminated (transformed to None)
@@ -339,49 +295,9 @@ def test_nan_values_hdf5(entry_point):
     assert_frame_equal(loaded.df, df)
 
 
-@pytest.mark.parametrize("entry_point", ("dataframe.frame",))
-def test_nan_values(entry_point):
-    """
-    Make sure that NaNs are eliminated (transformed to None)
-    before being stored in the Database
-    """
-
-    df = pd.DataFrame(
-        {
-            "None": [
-                np.NAN,
-                float("NaN"),
-                np.inf,
-                float("inf"),
-            ],
-        }
-    )
-
-    # The NaNs are reconstructed only in the final Dataframe
-    # by pandas noticing the None values in a numeric column
-    df_after = pd.DataFrame(
-        {
-            "None": [float("NaN"), float("NaN"), float("NaN"), float("NaN")],
-        }
-    )
-
-    PandasFrameData = DataFactory(entry_point)
-    node = PandasFrameData(df)
-
-    # Make sure that NaNs and infs already disappeared during this step
-    assert all(row["None"] is None for row in node.obj.as_dict()["data"])
-    node.store()
-
-    loaded = load_node(node.pk)
-    assert_frame_equal(loaded.df, df_after)
-
-
 @pytest.mark.parametrize(
     "entry_point",
-    (
-        "dataframe.frame",
-        "dataframe.hdf5",
-    ),
+    ("dataframe.frame",),
 )
 def test_wrong_inputs(entry_point):
     """
@@ -396,3 +312,65 @@ def test_wrong_inputs(entry_point):
     # Wrong type
     with pytest.raises(TypeError):
         PandasFrameData([1, 2, 3])
+
+
+@pytest.mark.parametrize(
+    "entry_point",
+    ("dataframe.frame",),
+)
+def test_modification_after_store(entry_point):
+    """
+    Raise if the dataframe is modified after storing
+    """
+
+    PandasFrameData = DataFactory(entry_point)
+
+    # Example from pandas Docs
+    df = pd.DataFrame(
+        {
+            "A": 1.0,
+            "B": pd.Timestamp("20130102"),
+            "C": pd.Series(1, index=list(range(4)), dtype="float32"),
+            "D": np.array([3] * 4, dtype="int32"),
+            "E": pd.Categorical(["test", "train", "test", "train"]),
+            "F": "foo",
+        }
+    )
+
+    node = PandasFrameData(df)
+    node.store()
+
+    with pytest.raises(exceptions.ModificationNotAllowed):
+        node.df = node.df.rename({"A": "A_rename"})
+
+
+@pytest.mark.parametrize(
+    "entry_point",
+    ("dataframe.frame",),
+)
+def test_modification_before_store(entry_point):
+    """
+    Test that modifying the dataframe before storing is propagated
+    """
+
+    PandasFrameData = DataFactory(entry_point)
+
+    # Example from pandas Docs
+    df = pd.DataFrame(
+        {
+            "A": 1.0,
+            "B": pd.Timestamp("20130102"),
+            "C": pd.Series(1, index=list(range(4)), dtype="float32"),
+            "D": np.array([3] * 4, dtype="int32"),
+            "E": pd.Categorical(["test", "train", "test", "train"]),
+            "F": "foo",
+        }
+    )
+
+    node = PandasFrameData(df)
+    node.df = node.df.rename({"A": "A_rename"})
+    node.store()
+
+    loaded = load_node(node.pk)
+    assert loaded is not node
+    assert_frame_equal(loaded.df, df.rename({"A": "A_rename"}))

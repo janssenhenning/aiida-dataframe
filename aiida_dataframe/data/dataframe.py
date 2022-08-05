@@ -1,92 +1,38 @@
 """
-This module defines a AiiDA Data plugin for pandas DataFrames
+This module defines a AiiDA Data plugin for pandas DataFrames to be
+stored in the file repository as HDF5 files
 """
 from __future__ import annotations
 
-import json
+from pathlib import Path
+import shutil
+import tempfile
 from typing import Any
 
 import pandas as pd
 
-from aiida.orm import JsonableData
+from aiida.common import exceptions
+from aiida.orm import SinglefileData
 
 
-class DataFrameJsonableWrapper:
+class PandasFrameData(SinglefileData):
     """
-    Wrapper to add the needed Protocol in order for the
-    DataFrame to interact correctly with the Jsonable Data class
+    Data plugin for pandas DataFrame objects. Dataframes are serialized to Hdf5
+    using the :py:meth:`~pandas.DataFrame.to_hdf()` method  and stored in the
+    file repository and are deserialized using :py:func:`~pandas.read_hdf()`
+
+    The whole DataFrame can be retrieved by using the :py:meth:`df` property
+    The names of columns and indices are stored in attributes to be queryable through
+    the database
 
     :param df: pandas Dataframe
-    :param orient: Defines the format of the json that is stored in the database
-                   Valid are: 'split', 'records', 'index', 'columns', 'values', 'table'
     """
 
-    COLUMN_SEPARATOR = "___"
+    DEFAULT_FILENAME = "dataframe.h5"
 
-    def __init__(self, df: pd.DataFrame, orient: str = "table") -> None:
-        self.df = df.copy()
-        self.orient = orient
-
-    def as_dict(self) -> dict[str, Any]:
-        """
-        Serialize the Dataframe as a json serializable dictionary
-        """
-        multiindex = False
-        columns = self.df.columns
-        if isinstance(self.df.columns, pd.MultiIndex):
-            columns = self.df.columns.to_flat_index()
-            self.df.columns = [self.COLUMN_SEPARATOR.join(col) for col in columns]
-            multiindex = True
-
-        json_string = self.df.to_json(orient=self.orient)
-
-        # Make sure that the json can be deserialized
-        try:
-            pd.read_json(json_string, orient=self.orient, typ="frame")
-        except (TypeError, ValueError) as exc:
-            raise TypeError(
-                f"the dataframe `{self.df}` is not JSON-serializable and therefore cannot be stored."
-            ) from exc
-
-        d = json.loads(json_string)
-        d["_orient"] = self.orient
-        d["_multiindex"] = multiindex
-        if "columns" not in d:
-            d["columns"] = list(columns)
-        if "index" not in d:
-            d["index"] = list(self.df.index)
-        return d
-
-    @classmethod
-    def from_dict(cls, d: dict[str, Any]) -> DataFrameJsonableWrapper:
-        """
-        Construct a pandas Dataframe from a dictionary
-        """
-        orient = d.pop("_orient", "table")
-        multiindex = d.pop("_multiindex", False)
-        d.pop("columns", None)
-        d.pop("index", None)
-
-        json_string = json.dumps(d)
-        df = pd.read_json(json_string, orient=orient, typ="frame")
-        if multiindex:
-            columns = [tuple(col.split(cls.COLUMN_SEPARATOR)) for col in df.columns]
-            df.columns = pd.MultiIndex.from_tuples(columns)
-        return cls(df, orient=orient)
-
-
-class PandasFrameData(JsonableData):
-    """
-    Data plugin for pandas DataFrame objects. Dataframes are serializaed to json
-    using the :py:meth:`~pandas.DataFrame.to_json()` method and are deserialized
-    using :py:func:`~pandas.read_json()`
-
-    :param df: pandas Dataframe
-    :param orient: Defines the format of the json that is stored in the database (default: 'table')
-                   Valid are: 'split', 'records', 'index', 'columns', 'values', 'table'
-    """
-
-    def __init__(self, df: pd.DataFrame, orient: str = "table", **kwargs: Any) -> None:
+    def __init__(
+        self, df: pd.DataFrame, filename: str | None = None, **kwargs: Any
+    ) -> None:
 
         if df is None:
             raise TypeError("the `df` argument cannot be `None`.")
@@ -94,12 +40,58 @@ class PandasFrameData(JsonableData):
         if not isinstance(df, pd.DataFrame):
             raise TypeError("the `df` argument is not a pandas DataFrame.")
 
-        obj = DataFrameJsonableWrapper(df, orient=orient)
-        super().__init__(obj, **kwargs)
+        super().__init__(None, filename=filename, **kwargs)
+        self._update_dataframe(df, filename=filename)
+        self._df = df
+
+    def _update_dataframe(self, df: pd.DataFrame, filename: str | None = None) -> None:
+        """
+        Update the stored HDF5 file. Raises if the node is already stored
+        """
+        if self.is_stored:
+            raise exceptions.ModificationNotAllowed(
+                "cannot update the DataFrame on a stored node"
+            )
+
+        with tempfile.TemporaryDirectory() as td:
+            df.to_hdf(Path(td) / self.DEFAULT_FILENAME, "w", format="table")
+
+            with open(Path(td) / self.DEFAULT_FILENAME, "rb") as file:
+                self.set_file(file, filename=filename)
+
+        self.set_attribute("index", list(self.df.index))
+        self.set_attribute("columns", list(self.df.columns.to_flat_index()))
+
+    def _get_dataframe(self) -> pd.DataFrame:
+        """
+        Get dataframe associated with this node.
+        """
+        try:
+            self._df
+        except AttributeError:
+
+            with tempfile.TemporaryDirectory() as td:
+                with open(Path(td) / self.filename, "wb") as temp_handle:
+                    with self.open(self.filename, mode="rb") as file:
+                        # Copy the content of source to target in chunks
+                        shutil.copyfileobj(file, temp_handle)  # type: ignore[arg-type]
+
+                self._df = pd.read_hdf(Path(td) / self.filename)
+
+        if self.is_stored:
+            return self._df.copy(deep=True)
+        return self._df
 
     @property
     def df(self) -> pd.DataFrame:
         """
         Return the pandas DataFrame instance associated with this node
         """
-        return self.obj.df
+        return self._get_dataframe()
+
+    @df.setter
+    def df(self, df: pd.DataFrame) -> None:
+        """
+        Update the associated dataframe
+        """
+        self._update_dataframe(df)
