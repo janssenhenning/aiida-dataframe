@@ -5,6 +5,7 @@ import pandas as pd
 from pandas.testing import assert_frame_equal
 import pytest
 
+from aiida.common import exceptions
 from aiida.orm import QueryBuilder, load_node
 from aiida.plugins import DataFactory
 
@@ -311,3 +312,65 @@ def test_wrong_inputs(entry_point):
     # Wrong type
     with pytest.raises(TypeError):
         PandasFrameData([1, 2, 3])
+
+
+@pytest.mark.parametrize(
+    "entry_point",
+    ("dataframe.frame",),
+)
+def test_modification_after_store(entry_point):
+    """
+    Raise if the dataframe is modified after storing
+    """
+
+    PandasFrameData = DataFactory(entry_point)
+
+    # Example from pandas Docs
+    df = pd.DataFrame(
+        {
+            "A": 1.0,
+            "B": pd.Timestamp("20130102"),
+            "C": pd.Series(1, index=list(range(4)), dtype="float32"),
+            "D": np.array([3] * 4, dtype="int32"),
+            "E": pd.Categorical(["test", "train", "test", "train"]),
+            "F": "foo",
+        }
+    )
+
+    node = PandasFrameData(df)
+    node.store()
+
+    with pytest.raises(exceptions.ModificationNotAllowed):
+        node.df = node.df.rename({"A": "A_rename"})
+
+
+@pytest.mark.parametrize(
+    "entry_point",
+    ("dataframe.frame",),
+)
+def test_modification_before_store(entry_point):
+    """
+    Test that modifying the dataframe before storing is propagated
+    """
+
+    PandasFrameData = DataFactory(entry_point)
+
+    # Example from pandas Docs
+    df = pd.DataFrame(
+        {
+            "A": 1.0,
+            "B": pd.Timestamp("20130102"),
+            "C": pd.Series(1, index=list(range(4)), dtype="float32"),
+            "D": np.array([3] * 4, dtype="int32"),
+            "E": pd.Categorical(["test", "train", "test", "train"]),
+            "F": "foo",
+        }
+    )
+
+    node = PandasFrameData(df)
+    node.df = node.df.rename({"A": "A_rename"})
+    node.store()
+
+    loaded = load_node(node.pk)
+    assert loaded is not node
+    assert_frame_equal(loaded.df, df.rename({"A": "A_rename"}))
