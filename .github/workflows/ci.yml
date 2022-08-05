@@ -11,6 +11,7 @@ jobs:
       matrix:
         python-version: ["3.7","3.8", "3.9", "3.10"] #3.7 will install AiiDA 1.X
         aiida-version: ["stable"]
+      fail-fast: False
 
     services:
       postgres:
@@ -43,6 +44,7 @@ jobs:
       run: |
         pip install --upgrade pip
         pip install -e .[testing]
+        reentry scan || true
 
     - name: Run test suite
       env:
