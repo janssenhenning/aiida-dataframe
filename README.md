@@ -65,17 +65,6 @@ pytest -v  # discover and run all tests
 
 See the [developer guide](http://aiida-dataframe.readthedocs.io/en/latest/developer_guide/index.html) for more information.
 
-## TODO:
-
-- Add calcfunctions for common DataFrame operations to track provenance
-  - groupby
-  - ...
-- Large DataFrames might be better stored in the file repository
-  - Investigate performance of different file serializations
-  - Keep two Data classes to let users choose where to store the data?
-- Should the `df` property have a setter to mutate the DataFrame?
-  - Raise when the node is already stored
-
 ## License
 
 MIT

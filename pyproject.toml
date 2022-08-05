@@ -16,7 +16,12 @@ classifiers = [
     "Intended Audience :: Science/Research",
     "License :: OSI Approved :: MIT License",
     "Natural Language :: English",
-    "Development Status :: 3 - Alpha",
+    'Development Status :: 4 - Beta',
+    'Programming Language :: Python :: 3',
+    'Programming Language :: Python :: 3.7',
+    'Programming Language :: Python :: 3.8',
+    'Programming Language :: Python :: 3.9',
+    'Programming Language :: Python :: 3.10',
     "Framework :: AiiDA"
 ]
 keywords = ["aiida", "plugin"]
@@ -30,6 +35,8 @@ dependencies = [
 
 [project.urls]
 Source = "https://github.com/janssenhenning/aiida-dataframe"
+Home = "https://aiida-dataframe.readthedocs.io"
+Documentation = "https://aiida-dataframe.readthedocs.io"
 
 [project.optional-dependencies]
 testing = [
