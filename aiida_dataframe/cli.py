@@ -47,9 +47,7 @@ def list_():  # pylint: disable=redefined-builtin
 @click.argument(
     "node",
     metavar="IDENTIFIER",
-    type=DataParamType(
-        sub_classes=("aiida.data:dataframe.frame",)
-    ),
+    type=DataParamType(sub_classes=("aiida.data:dataframe.frame",)),
 )
 @decorators.with_dbenv()
 def show(node):
@@ -61,9 +59,7 @@ def show(node):
 @click.argument(
     "node",
     metavar="IDENTIFIER",
-    type=DataParamType(
-        sub_classes=("aiida.data:dataframe.frame",)
-    ),
+    type=DataParamType(sub_classes=("aiida.data:dataframe.frame",)),
 )
 @click.option(
     "--outfile",

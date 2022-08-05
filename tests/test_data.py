@@ -11,9 +11,7 @@ from aiida.plugins import DataFactory
 
 @pytest.mark.parametrize(
     "entry_point",
-    (
-        "dataframe.frame",
-    ),
+    ("dataframe.frame",),
 )
 def test_roundtrip(entry_point):
     """
@@ -45,9 +43,7 @@ def test_roundtrip(entry_point):
 
 @pytest.mark.parametrize(
     "entry_point",
-    (
-        "dataframe.frame",
-    ),
+    ("dataframe.frame",),
 )
 def test_multiindex_columns_roundtrip(entry_point):
     """
@@ -78,9 +74,7 @@ def test_multiindex_columns_roundtrip(entry_point):
 
 @pytest.mark.parametrize(
     "entry_point",
-    (
-        "dataframe.frame",
-    ),
+    ("dataframe.frame",),
 )
 def test_multiindex_index_roundtrip(entry_point):
     """
@@ -102,9 +96,7 @@ def test_multiindex_index_roundtrip(entry_point):
 
 @pytest.mark.parametrize(
     "entry_point",
-    (
-        "dataframe.frame",
-    ),
+    ("dataframe.frame",),
 )
 def test_query_columns(entry_point):
     """
@@ -152,9 +144,7 @@ def test_query_columns(entry_point):
 
 @pytest.mark.parametrize(
     "entry_point",
-    (
-        "dataframe.frame",
-    ),
+    ("dataframe.frame",),
 )
 def test_query_multiindex_columns(entry_point):
     """
@@ -204,9 +194,7 @@ def test_query_multiindex_columns(entry_point):
 
 @pytest.mark.parametrize(
     "entry_point",
-    (
-        "dataframe.frame",
-    ),
+    ("dataframe.frame",),
 )
 def test_query_index(entry_point):
     """
@@ -308,9 +296,7 @@ def test_nan_values_hdf5(entry_point):
 
 @pytest.mark.parametrize(
     "entry_point",
-    (
-        "dataframe.frame",
-    ),
+    ("dataframe.frame",),
 )
 def test_wrong_inputs(entry_point):
     """
