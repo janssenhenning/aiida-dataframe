@@ -374,3 +374,37 @@ def test_modification_before_store(entry_point):
     loaded = load_node(node.pk)
     assert loaded is not node
     assert_frame_equal(loaded.df, df.rename({"A": "A_rename"}))
+
+
+@pytest.mark.parametrize(
+    "entry_point",
+    ("dataframe.frame",),
+)
+def test_setitem_modification(entry_point):
+    """
+    Test that modifying the dataframe before storing is propagated
+    """
+
+    PandasFrameData = DataFactory(entry_point)
+
+    # Example from pandas Docs
+    df = pd.DataFrame(
+        {
+            "A": 1.0,
+            "B": pd.Timestamp("20130102"),
+            "C": pd.Series(1, index=list(range(4)), dtype="float32"),
+            "D": np.array([3] * 4, dtype="int32"),
+            "E": pd.Categorical(["test", "train", "test", "train"]),
+            "F": "foo",
+        }
+    )
+    df_changed = df.copy(deep=True)
+    df_changed["F"] = ["foo", "foo", "bar", "bar"]
+
+    node = PandasFrameData(df)
+    node.df["F"] = ["foo", "foo", "bar", "bar"]
+    node.store()
+
+    loaded = load_node(node.pk)
+    assert loaded is not node
+    assert_frame_equal(loaded.df, df_changed)

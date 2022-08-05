@@ -4,12 +4,14 @@ stored in the file repository as HDF5 files
 """
 from __future__ import annotations
 
+import hashlib
 from pathlib import Path
 import shutil
 import tempfile
 from typing import Any
 
 import pandas as pd
+from pandas.util import hash_pandas_object
 
 from aiida.common import exceptions
 from aiida.orm import SinglefileData
@@ -59,8 +61,28 @@ class PandasFrameData(SinglefileData):
             with open(Path(td) / self.DEFAULT_FILENAME, "rb") as file:
                 self.set_file(file, filename=filename)
 
+        self.set_attribute("_pandas_data_hash", self._hash_dataframe(df))
         self.set_attribute("index", list(self.df.index))
         self.set_attribute("columns", list(self.df.columns.to_flat_index()))
+
+    @staticmethod
+    def _hash_dataframe(df):
+        """
+        Return a hash corresponding to the Data inside the dataframe (not column names)
+        """
+        return hashlib.sha256(hash_pandas_object(df, index=True).values).hexdigest()
+
+    def _get_dataframe_from_repo(self) -> pd.DataFrame:
+        """
+        Get dataframe associated with this node from the file repository.
+        """
+        with tempfile.TemporaryDirectory() as td:
+            with open(Path(td) / self.filename, "wb") as temp_handle:
+                with self.open(self.filename, mode="rb") as file:
+                    # Copy the content of source to target in chunks
+                    shutil.copyfileobj(file, temp_handle)  # type: ignore[arg-type]
+
+            return pd.read_hdf(Path(td) / self.filename)
 
     def _get_dataframe(self) -> pd.DataFrame:
         """
@@ -69,14 +91,7 @@ class PandasFrameData(SinglefileData):
         try:
             self._df
         except AttributeError:
-
-            with tempfile.TemporaryDirectory() as td:
-                with open(Path(td) / self.filename, "wb") as temp_handle:
-                    with self.open(self.filename, mode="rb") as file:
-                        # Copy the content of source to target in chunks
-                        shutil.copyfileobj(file, temp_handle)  # type: ignore[arg-type]
-
-                self._df = pd.read_hdf(Path(td) / self.filename)
+            self._df = self._get_dataframe_from_repo()
 
         if self.is_stored:
             return self._df.copy(deep=True)
@@ -95,3 +110,17 @@ class PandasFrameData(SinglefileData):
         Update the associated dataframe
         """
         self._update_dataframe(df)
+
+    def store(self, *args, **kwargs) -> PandasFrameData:
+        """
+        Store the node. Before the node is stored
+        sync the HDF5 storage with the _df attribute on the node
+        This catches changes to the node made by using setitem
+        on the dataframe e.g. `df["A"] = new_value`
+        This is only done if the hashes of the DATA does not match up
+        """
+        current_hash = self._hash_dataframe(self._df)
+        if current_hash != self.get_attribute("_pandas_data_hash"):
+            self._update_dataframe(self._df, filename=self.filename)
+
+        return super().store(*args, **kwargs)
