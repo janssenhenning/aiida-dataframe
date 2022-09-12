@@ -62,8 +62,8 @@ class PandasFrameData(SinglefileData):
                 self.set_file(file, filename=filename)
 
         self.set_attribute("_pandas_data_hash", self._hash_dataframe(df))
-        self.set_attribute("index", list(self.df.index))
-        self.set_attribute("columns", list(self.df.columns.to_flat_index()))
+        self.set_attribute("index", list(df.index))
+        self.set_attribute("columns", list(df.columns.to_flat_index()))
 
     @staticmethod
     def _hash_dataframe(df):
@@ -82,7 +82,13 @@ class PandasFrameData(SinglefileData):
                     # Copy the content of source to target in chunks
                     shutil.copyfileobj(file, temp_handle)  # type: ignore[arg-type]
 
-            return pd.read_hdf(Path(td) / self.filename)
+            # Workaround for empty dataframe
+            with pd.HDFStore(
+                Path(td) / self.filename, mode="r", errors="strict"
+            ) as store:
+                if len(store.groups()) == 0:
+                    return pd.DataFrame([], columns=self.get_attribute("columns"))
+                return pd.read_hdf(store)
 
     def _get_dataframe(self) -> pd.DataFrame:
         """
