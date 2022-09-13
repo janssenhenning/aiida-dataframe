@@ -408,3 +408,25 @@ def test_setitem_modification(entry_point):
     loaded = load_node(node.pk)
     assert loaded is not node
     assert_frame_equal(loaded.df, df_changed)
+
+
+@pytest.mark.parametrize(
+    "entry_point",
+    ("dataframe.frame",),
+)
+def test_empty_dataframe(entry_point):
+    """
+    Test that storing an empty dataframe works
+    """
+
+    PandasFrameData = DataFactory(entry_point)
+
+    # Example from pandas Docs
+    df = pd.DataFrame([], columns=["A", "B"])
+
+    node = PandasFrameData(df)
+    node.store()
+
+    loaded = load_node(node.pk)
+    assert loaded is not node
+    assert_frame_equal(loaded.df, df)
