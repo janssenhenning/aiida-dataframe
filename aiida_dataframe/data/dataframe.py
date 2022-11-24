@@ -42,11 +42,11 @@ class PandasFrameData(SinglefileData):
         if not isinstance(df, pd.DataFrame):
             raise TypeError("the `df` argument is not a pandas DataFrame.")
 
-        super().__init__(None, filename=filename, **kwargs)
-        self._update_dataframe(df)
+        super().__init__(None, **kwargs)
+        self._update_dataframe(df, filename=filename)
         self._df = df
 
-    def _update_dataframe(self, df: pd.DataFrame) -> None:
+    def _update_dataframe(self, df: pd.DataFrame, filename: str | None=None) -> None:
         """
         Update the stored HDF5 file. Raises if the node is already stored
         """
@@ -54,16 +54,19 @@ class PandasFrameData(SinglefileData):
             raise exceptions.ModificationNotAllowed(
                 "cannot update the DataFrame on a stored node"
             )
+        if filename is None:
+            filename = self.filename
 
         with tempfile.TemporaryDirectory() as td:
             df.to_hdf(Path(td) / self.DEFAULT_FILENAME, "w", format="table")
 
             with open(Path(td) / self.DEFAULT_FILENAME, "rb") as file:
-                self.set_file(file, filename=self.filename)
+                self.set_file(file, filename=filename)
 
         self.set_attribute("_pandas_data_hash", self._hash_dataframe(df))
         self.set_attribute("index", list(df.index))
         self.set_attribute("columns", list(df.columns.to_flat_index()))
+        self._df = df
 
     @staticmethod
     def _hash_dataframe(df):
@@ -116,7 +119,6 @@ class PandasFrameData(SinglefileData):
         Update the associated dataframe
         """
         self._update_dataframe(df)
-        self._df = df
 
     def store(self, *args, **kwargs) -> PandasFrameData:
         """
