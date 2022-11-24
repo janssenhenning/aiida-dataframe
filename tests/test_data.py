@@ -485,12 +485,12 @@ def test_non_default_filename(entry_point):
         }
     )
 
-    node = PandasFrameData(df, filename='non_default.h5')
+    node = PandasFrameData(df, filename="non_default.h5")
     node.store()
 
-    assert node.list_object_names() == ['non_default.h5']
+    assert node.list_object_names() == ["non_default.h5"]
 
     loaded = load_node(node.pk)
     assert loaded is not node
-    assert loaded.list_object_names() == ['non_default.h5']
+    assert loaded.list_object_names() == ["non_default.h5"]
     assert_frame_equal(loaded.df, df)
