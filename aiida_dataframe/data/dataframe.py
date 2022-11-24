@@ -42,7 +42,7 @@ class PandasFrameData(SinglefileData):
         if not isinstance(df, pd.DataFrame):
             raise TypeError("the `df` argument is not a pandas DataFrame.")
 
-        super().__init__(None, filename=filename, **kwargs)
+        super().__init__(None, **kwargs)
         self._update_dataframe(df, filename=filename)
         self._df = df
 
@@ -54,6 +54,11 @@ class PandasFrameData(SinglefileData):
             raise exceptions.ModificationNotAllowed(
                 "cannot update the DataFrame on a stored node"
             )
+        if filename is None:
+            try:
+                filename = self.filename
+            except AttributeError:
+                filename = self.DEFAULT_FILENAME
 
         with tempfile.TemporaryDirectory() as td:
             df.to_hdf(Path(td) / self.DEFAULT_FILENAME, "w", format="table")
@@ -64,6 +69,7 @@ class PandasFrameData(SinglefileData):
         self.set_attribute("_pandas_data_hash", self._hash_dataframe(df))
         self.set_attribute("index", list(df.index))
         self.set_attribute("columns", list(df.columns.to_flat_index()))
+        self._df = df
 
     @staticmethod
     def _hash_dataframe(df):
@@ -127,6 +133,6 @@ class PandasFrameData(SinglefileData):
         """
         current_hash = self._hash_dataframe(self._df)
         if current_hash != self.get_attribute("_pandas_data_hash"):
-            self._update_dataframe(self._df, filename=self.filename)
+            self._update_dataframe(self._df)
 
         return super().store(*args, **kwargs)
