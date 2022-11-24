@@ -454,8 +454,8 @@ def test_modification_before_instance_update(entry_point):
         }
     )
     df_changed = df.copy(deep=True)
-    df_changed["F"] = ["foo", "foo", "bar", "bar"]
+    df_changed = df_changed.set_index("C")
 
     node = PandasFrameData(df)
-    node.df["F"] = ["foo", "foo", "bar", "bar"]
+    node.df = node.df.set_index("C")
     assert_frame_equal(node.df, df_changed)
