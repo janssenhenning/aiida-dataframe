@@ -460,3 +460,37 @@ def test_modification_before_instance_update(entry_point):
     node = PandasFrameData(df)
     node.df = node.df.set_index("C")
     assert_frame_equal(node.df, df_changed)
+
+
+@pytest.mark.parametrize(
+    "entry_point",
+    ("dataframe.frame",),
+)
+def test_non_default_filename(entry_point):
+    """
+    Test that modifying the dataframe before storing is propagated
+    """
+
+    PandasFrameData = DataFactory(entry_point)
+
+    # Example from pandas Docs
+    df = pd.DataFrame(
+        {
+            "A": 1.0,
+            "B": pd.Timestamp("20130102"),
+            "C": pd.Series(1, index=list(range(4)), dtype="float32"),
+            "D": np.array([3] * 4, dtype="int32"),
+            "E": pd.Categorical(["test", "train", "test", "train"]),
+            "F": "foo",
+        }
+    )
+
+    node = PandasFrameData(df, filename='non_default.h5')
+    node.store()
+
+    assert node.list_object_names() == ['non_default.h5']
+
+    loaded = load_node(node.pk)
+    assert loaded is not node
+    assert loaded.list_object_names() == ['non_default.h5']
+    assert_frame_equal(loaded.df, df)
