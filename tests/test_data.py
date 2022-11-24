@@ -458,4 +458,4 @@ def test_modification_before_instance_update(entry_point):
 
     node = PandasFrameData(df)
     node.df["F"] = ["foo", "foo", "bar", "bar"]
-    assert_frame_equal(loaded.df, df_changed)
+    assert_frame_equal(node.df, df_changed)
