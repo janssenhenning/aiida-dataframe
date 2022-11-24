@@ -53,7 +53,7 @@ The underlying DataFrame is accessible using the `df` property of the Data node:
     Methods on :py:class:`pandas.DataFrame` objects return a new instance of the
     object and do not mutate the original instance. This means that as soon as the
     :py:class:`~aiida_dataframe.data.dataframe.PandasFrameData` is initialized the associated
-    DataFrame essentially is fixed. Any operation on the dataframe on the 
+    DataFrame essentially is fixed. Any operation on the dataframe on the
     :py:class:`~aiida_dataframe.data.dataframe.PandasFrameData` class will completely overwrite
     and recreate the associated HDF5 file in it's repository.
 

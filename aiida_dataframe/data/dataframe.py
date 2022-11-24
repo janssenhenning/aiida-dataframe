@@ -46,7 +46,7 @@ class PandasFrameData(SinglefileData):
         self._update_dataframe(df, filename=filename)
         self._df = df
 
-    def _update_dataframe(self, df: pd.DataFrame, filename: str | None=None) -> None:
+    def _update_dataframe(self, df: pd.DataFrame, filename: str | None = None) -> None:
         """
         Update the stored HDF5 file. Raises if the node is already stored
         """
@@ -55,7 +55,7 @@ class PandasFrameData(SinglefileData):
                 "cannot update the DataFrame on a stored node"
             )
         if filename is None:
-            try: 
+            try:
                 filename = self.filename
             except AttributeError:
                 filename = self.DEFAULT_FILENAME

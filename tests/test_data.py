@@ -431,6 +431,7 @@ def test_empty_dataframe(entry_point):
     assert loaded is not node
     assert_frame_equal(loaded.df, df)
 
+
 @pytest.mark.parametrize(
     "entry_point",
     ("dataframe.frame",),
