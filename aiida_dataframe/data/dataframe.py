@@ -55,7 +55,10 @@ class PandasFrameData(SinglefileData):
                 "cannot update the DataFrame on a stored node"
             )
         if filename is None:
-            filename = self.filename
+            try: 
+                filename = self.filename
+            except AttributeError:
+                filename = self.DEFAULT_FILENAME
 
         with tempfile.TemporaryDirectory() as td:
             df.to_hdf(Path(td) / self.DEFAULT_FILENAME, "w", format="table")
