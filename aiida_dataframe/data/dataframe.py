@@ -43,10 +43,10 @@ class PandasFrameData(SinglefileData):
             raise TypeError("the `df` argument is not a pandas DataFrame.")
 
         super().__init__(None, filename=filename, **kwargs)
-        self._update_dataframe(df, filename=filename)
+        self._update_dataframe(df)
         self._df = df
 
-    def _update_dataframe(self, df: pd.DataFrame, filename: str | None = None) -> None:
+    def _update_dataframe(self, df: pd.DataFrame) -> None:
         """
         Update the stored HDF5 file. Raises if the node is already stored
         """
@@ -59,7 +59,7 @@ class PandasFrameData(SinglefileData):
             df.to_hdf(Path(td) / self.DEFAULT_FILENAME, "w", format="table")
 
             with open(Path(td) / self.DEFAULT_FILENAME, "rb") as file:
-                self.set_file(file, filename=filename)
+                self.set_file(file, filename=self.filename)
 
         self.set_attribute("_pandas_data_hash", self._hash_dataframe(df))
         self.set_attribute("index", list(df.index))
@@ -116,6 +116,7 @@ class PandasFrameData(SinglefileData):
         Update the associated dataframe
         """
         self._update_dataframe(df)
+        self._df = df
 
     def store(self, *args, **kwargs) -> PandasFrameData:
         """
@@ -127,6 +128,6 @@ class PandasFrameData(SinglefileData):
         """
         current_hash = self._hash_dataframe(self._df)
         if current_hash != self.get_attribute("_pandas_data_hash"):
-            self._update_dataframe(self._df, filename=self.filename)
+            self._update_dataframe(self._df)
 
         return super().store(*args, **kwargs)
