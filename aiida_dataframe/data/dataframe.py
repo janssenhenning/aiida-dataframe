@@ -35,7 +35,6 @@ class PandasFrameData(SinglefileData):
     def __init__(
         self, df: pd.DataFrame, filename: str | None = None, **kwargs: Any
     ) -> None:
-
         if df is None:
             raise TypeError("the `df` argument cannot be `None`.")
 
