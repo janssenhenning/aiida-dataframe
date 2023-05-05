@@ -130,8 +130,12 @@ class PandasFrameData(SinglefileData):
         on the dataframe e.g. `df["A"] = new_value`
         This is only done if the hashes of the DATA does not match up
         """
-        current_hash = self._hash_dataframe(self._df)
-        if current_hash != self.get_attribute("_pandas_data_hash"):
-            self._update_dataframe(self._df)
+        if not self.is_stored:
+            # Check if the dataframe directly attached to the node
+            # has been mutated in place before storing
+            # If so the underlying file is updated
+            current_hash = self._hash_dataframe(self._df)
+            if current_hash != self.get_attribute("_pandas_data_hash"):
+                self._update_dataframe(self._df)
 
         return super().store(*args, **kwargs)
