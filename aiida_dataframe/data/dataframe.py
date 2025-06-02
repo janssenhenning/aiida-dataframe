@@ -2,6 +2,7 @@
 This module defines a AiiDA Data plugin for pandas DataFrames to be
 stored in the file repository as HDF5 files
 """
+
 from __future__ import annotations
 
 import hashlib

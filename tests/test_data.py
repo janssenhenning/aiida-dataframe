@@ -1,4 +1,4 @@
-""" Tests for Data plugin."""
+"""Tests for Data plugin."""
 
 import numpy as np
 from packaging.version import Version
