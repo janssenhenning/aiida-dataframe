@@ -10,7 +10,11 @@ jobs:
     strategy:
       matrix:
         python-version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
-        aiida-version: ["stable", "1.6.9"]
+        aiida-version: ["stable"]
+        include:
+            - python-version: "3.8"
+              aiida-version: "1.6.9"
+              allowed-to-fail: false
       fail-fast: False
 
     services:
