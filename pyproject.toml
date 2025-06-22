@@ -55,7 +55,7 @@ docs = [
     "sphinx",
     "sphinxcontrib-contentui",
     "sphinxcontrib-details-directive",
-    "sphinx-autodoc-typehints"
+    "sphinx-autodoc-typehints",
     "furo",
     "markupsafe<2.1"
 ]
