@@ -11,8 +11,9 @@ from aiida.orm import QueryBuilder, load_node
 from aiida.plugins import DataFactory
 
 
-pandas_2_xfail = pytest.mark.skipif(
-    Version(pd.__version__) >= Version("2.0.0") and Version(pd.__version__) < Version("3.0.0"), reason="Pandas 2 does not handle datetime64[s] with HDF5 correctly. Correct failure behaviour tested in test_roundtrip"
+pandas_2_xfail = pytest.mark.xfail(
+    Version(pd.__version__) >= Version("2.0.0") and Version(pd.__version__) < Version("3.0.0"), reason="Pandas 2 does not handle datetime64[s] with HDF5 correctly. Correct failure behaviour tested in test_roundtrip", 
+    raises=ValueError
 )
 
 
