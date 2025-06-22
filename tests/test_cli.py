@@ -75,7 +75,7 @@ class TestDataCli:
                 content = file.read()
 
             #The content of result.csv should be the same as in the test without --outfile
-            file_regression.check(content, basename="test_dataframe_export")
+            file_regression.check(content, basename="test_dataframe_export", extension=".csv")
 
     
     @pandas_2_xfail
