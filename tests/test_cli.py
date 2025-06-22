@@ -1,4 +1,5 @@
-""" Tests for command line interface."""
+"""Tests for command line interface."""
+
 import traceback
 
 from click.testing import CliRunner
