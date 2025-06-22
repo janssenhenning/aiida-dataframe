@@ -4,6 +4,7 @@ import numpy as np
 from packaging.version import Version
 import pandas as pd
 import pytest
+import traceback
 
 from aiida.plugins import DataFactory
 
