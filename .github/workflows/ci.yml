@@ -75,6 +75,7 @@ jobs:
       run: |
         pip install --upgrade pip
         pip install -e .[docs]
+        pip install pandas>2
     - name: Build docs
       run: cd docs && make
 
