@@ -1,19 +1,20 @@
 """ Tests for Data plugin."""
 
 import numpy as np
+from packaging.version import Version
 import pandas as pd
 from pandas.testing import assert_frame_equal
 import pytest
-from packaging.version import Version
 
 from aiida.common import exceptions
 from aiida.orm import QueryBuilder, load_node
 from aiida.plugins import DataFactory
 
-
 pandas_2_xfail = pytest.mark.xfail(
-    Version(pd.__version__) >= Version("2.0.0") and Version(pd.__version__) < Version("3.0.0"), reason="Pandas 2 does not handle datetime64[s] with HDF5 correctly. Correct failure behaviour tested in test_roundtrip", 
-    raises=ValueError
+    Version(pd.__version__) >= Version("2.0.0")
+    and Version(pd.__version__) < Version("3.0.0"),
+    reason="Pandas 2 does not handle datetime64[s] with HDF5 correctly. Correct failure behaviour tested in test_roundtrip",
+    raises=ValueError,
 )
 
 
@@ -40,7 +41,9 @@ def test_roundtrip(entry_point):
     )
 
     PandasFrameData = DataFactory(entry_point)
-    if Version(pd.__version__) >= Version("2.0.0") and Version(pd.__version__) < Version("3.0.0"):
+    if Version(pd.__version__) >= Version("2.0.0") and Version(
+        pd.__version__
+    ) < Version("3.0.0"):
         with pytest.raises(ValueError) as excinfo:
             node = PandasFrameData(df)
         assert "datetime64" in str(excinfo.value)
@@ -48,7 +51,7 @@ def test_roundtrip(entry_point):
         node = PandasFrameData(df)
         node.store()
         assert node.is_stored
-    
+
         loaded = load_node(node.pk)
         assert loaded is not node
         assert_frame_equal(loaded.df, df)
@@ -105,6 +108,7 @@ def test_multiindex_index_roundtrip(entry_point):
     loaded = load_node(node.pk)
     assert loaded is not node
     assert_frame_equal(loaded.df, df)
+
 
 @pandas_2_xfail
 @pytest.mark.parametrize(
@@ -204,6 +208,7 @@ def test_query_multiindex_columns(entry_point):
     assert len(query.all()) == 1
     assert query.one()[0].uuid == df_node_1.uuid
 
+
 @pandas_2_xfail
 @pytest.mark.parametrize(
     "entry_point",
@@ -247,6 +252,7 @@ def test_query_index(entry_point):
 
     assert len(query.all()) == 1
     assert query.one()[0].uuid == df_node_1.uuid
+
 
 @pandas_2_xfail
 @pytest.mark.parametrize("entry_point", ("dataframe.frame",))
@@ -325,6 +331,7 @@ def test_wrong_inputs(entry_point):
     with pytest.raises(TypeError):
         PandasFrameData([1, 2, 3])
 
+
 @pandas_2_xfail
 @pytest.mark.parametrize(
     "entry_point",
@@ -354,6 +361,7 @@ def test_modification_after_store(entry_point):
 
     with pytest.raises(exceptions.ModificationNotAllowed):
         node.df = node.df.rename({"A": "A_rename"})
+
 
 @pandas_2_xfail
 @pytest.mark.parametrize(
@@ -386,6 +394,7 @@ def test_modification_before_store(entry_point):
     loaded = load_node(node.pk)
     assert loaded is not node
     assert_frame_equal(loaded.df, df.rename({"A": "A_rename"}))
+
 
 @pandas_2_xfail
 @pytest.mark.parametrize(
@@ -443,6 +452,7 @@ def test_empty_dataframe(entry_point):
     assert loaded is not node
     assert_frame_equal(loaded.df, df)
 
+
 @pandas_2_xfail
 @pytest.mark.parametrize(
     "entry_point",
@@ -472,6 +482,7 @@ def test_modification_before_instance_update(entry_point):
     node = PandasFrameData(df)
     node.df = node.df.set_index("C")
     assert_frame_equal(node.df, df_changed)
+
 
 @pandas_2_xfail
 @pytest.mark.parametrize(
@@ -506,6 +517,7 @@ def test_non_default_filename(entry_point):
     assert loaded is not node
     assert loaded.list_object_names() == ["non_default.h5"]
     assert_frame_equal(loaded.df, df)
+
 
 @pandas_2_xfail
 @pytest.mark.parametrize(

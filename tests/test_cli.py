@@ -1,18 +1,21 @@
 """ Tests for command line interface."""
-import pytest
 from click.testing import CliRunner
-from packaging.version import Version
 import numpy as np
+from packaging.version import Version
 import pandas as pd
+import pytest
 
 from aiida.plugins import DataFactory
 
 from aiida_dataframe.cli import export, list_, show
 
 pandas_2_xfail = pytest.mark.xfail(
-    Version(pd.__version__) >= Version("2.0.0") and Version(pd.__version__) < Version("3.0.0"), reason="Pandas 2 does not handle datetime64[s] with HDF5 correctly. Correct failure behaviour tested in test_roundtrip", 
-    raises=ValueError
+    Version(pd.__version__) >= Version("2.0.0")
+    and Version(pd.__version__) < Version("3.0.0"),
+    reason="Pandas 2 does not handle datetime64[s] with HDF5 correctly. Correct failure behaviour tested in test_roundtrip",
+    raises=ValueError,
 )
+
 
 # pylint: disable=attribute-defined-outside-init
 class TestDataCli:
