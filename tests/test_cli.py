@@ -68,16 +68,19 @@ class TestDataCli:
 
         with self.runner.isolated_filesystem():
             result = self.runner.invoke(
-                export, [str(self.df_node.pk), '--outfile', TEST_FILE], catch_exceptions=False
+                export,
+                [str(self.df_node.pk), "--outfile", TEST_FILE],
+                catch_exceptions=False,
             )
 
             with open(TEST_FILE) as file:
                 content = file.read()
 
-            #The content of result.csv should be the same as in the test without --outfile
-            file_regression.check(content, basename="test_dataframe_export", extension=".csv")
+            # The content of result.csv should be the same as in the test without --outfile
+            file_regression.check(
+                content, basename="test_dataframe_export", extension=".csv"
+            )
 
-    
     @pandas_2_xfail
     def test_dataframe_show(self, file_regression):
         """Test 'verdi dataframe show'
