@@ -65,7 +65,7 @@ class PandasFrameData(SinglefileData):
             #This is fixed in pandas 3.0 (once it's released)
             #See https://github.com/pandas-dev/pandas/issues/59004
 
-            dtypes = df.dtypes.values
+            dtypes = df.dtypes.astype("string").values
             if any(dtype.startswith("datetime64") and dtype != "datetime64[ns]" for dtype in dtypes):
                 raise ValueError("Timestamp entries in a dataframe are not correctly handled in HDF5 IO for pandas 2.X.\n"
                                  "Either convert to datetime64[ns] manually before storing or remove the entry. This issue will be fixed in pandas 3.0\n"
