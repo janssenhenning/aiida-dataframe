@@ -41,6 +41,8 @@ intersphinx_mapping = {
     "pandas": ("http://pandas.pydata.org/pandas-docs/dev", None),
 }
 
+autodoc_type_aliases = {'pandas.core.frame.DataFrame': 'pandas.DataFrame'}
+
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
 
