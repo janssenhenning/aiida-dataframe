@@ -31,6 +31,7 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinx.ext.viewcode",
     "sphinxcontrib.contentui",
+    "sphinx_autodoc_typehints",
     "aiida.sphinxext",
 ]
 
