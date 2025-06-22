@@ -40,13 +40,18 @@ def test_roundtrip(entry_point):
     )
 
     PandasFrameData = DataFactory(entry_point)
-    node = PandasFrameData(df)
-    node.store()
-    assert node.is_stored
-
-    loaded = load_node(node.pk)
-    assert loaded is not node
-    assert_frame_equal(loaded.df, df)
+    if Version(pd.__version__) >= Version("2.0.0") and Version(pd.__version__) < Version("3.0.0"):
+        with pytest.raises(ValueError) as excinfo:
+            node = PandasFrameData(df)
+        assert "datetime64" in excinfo.value
+    else:
+        node = PandasFrameData(df)
+        node.store()
+        assert node.is_stored
+    
+        loaded = load_node(node.pk)
+        assert loaded is not node
+        assert_frame_equal(loaded.df, df)
 
 
 @pytest.mark.parametrize(
@@ -71,19 +76,13 @@ def test_multiindex_columns_roundtrip(entry_point):
     df.columns = pd.MultiIndex.from_tuples([tuple(c.split("_")) for c in df.columns])
 
     PandasFrameData = DataFactory(entry_point)
+    node = PandasFrameData(df)
+    node.store()
+    assert node.is_stored
 
-    if Version(pd.__version__) >= Version("2.0.0") and Version(pd.__version__) < Version("3.0.0"):
-        with pytest.raises(ValueError) as excinfo:
-            node = PandasFrameData(df)
-        assert "datetime64" in excinfo.value
-    else:
-        node = PandasFrameData(df)
-        node.store()
-        assert node.is_stored
-    
-        loaded = load_node(node.pk)
-        assert loaded is not node
-        assert_frame_equal(loaded.df, df)
+    loaded = load_node(node.pk)
+    assert loaded is not node
+    assert_frame_equal(loaded.df, df)
 
 
 @pytest.mark.parametrize(
