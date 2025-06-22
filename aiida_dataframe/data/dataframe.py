@@ -12,7 +12,7 @@ from typing import Any
 
 from packaging.version import Version
 import pandas as pd
-from pandas.util import hash_pandas_object #pylint: disable=no-name-in-module
+from pandas.util import hash_pandas_object  # pylint: disable=no-name-in-module
 
 from aiida.common import exceptions
 from aiida.orm import SinglefileData

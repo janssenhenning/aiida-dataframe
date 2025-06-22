@@ -1,10 +1,11 @@
 """ Tests for command line interface."""
+import traceback
+
 from click.testing import CliRunner
 import numpy as np
 from packaging.version import Version
 import pandas as pd
 import pytest
-import traceback
 
 from aiida.plugins import DataFactory
 
@@ -47,10 +48,12 @@ class TestDataCli:
         """
         result = self.runner.invoke(list_, catch_exceptions=False)
 
-        #Check for success
-        assert result.exception is None, ''.join(traceback.format_exception(*result.exc_info))
+        # Check for success
+        assert result.exception is None, "".join(
+            traceback.format_exception(*result.exc_info)
+        )
         assert result.exit_code == 0, result.output
-        
+
         assert str(self.df_node.pk) in result.output
 
     @pandas_2_xfail
@@ -63,8 +66,10 @@ class TestDataCli:
             export, [str(self.df_node.pk)], catch_exceptions=False
         )
 
-        #Check for success
-        assert result.exception is None, ''.join(traceback.format_exception(*result.exc_info))
+        # Check for success
+        assert result.exception is None, "".join(
+            traceback.format_exception(*result.exc_info)
+        )
         assert result.exit_code == 0, result.output
 
         file_regression.check(result.output.strip("\n"), extension=".csv")
@@ -84,11 +89,13 @@ class TestDataCli:
                 catch_exceptions=False,
             )
 
-            #Check for success
-            assert result.exception is None, ''.join(traceback.format_exception(*result.exc_info))
+            # Check for success
+            assert result.exception is None, "".join(
+                traceback.format_exception(*result.exc_info)
+            )
             assert result.exit_code == 0, result.output
 
-            with open(TEST_FILE, encoding='utf-8') as file:
+            with open(TEST_FILE, encoding="utf-8") as file:
                 content = file.read()
 
             # The content of result.csv should be the same as in the test without --outfile
@@ -106,8 +113,10 @@ class TestDataCli:
             show, [str(self.df_node.pk)], catch_exceptions=False
         )
 
-        #Check for success
-        assert result.exception is None, ''.join(traceback.format_exception(*result.exc_info))
+        # Check for success
+        assert result.exception is None, "".join(
+            traceback.format_exception(*result.exc_info)
+        )
         assert result.exit_code == 0, result.output
-        
+
         file_regression.check(result.output)
