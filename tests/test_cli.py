@@ -59,6 +59,26 @@ class TestDataCli:
         file_regression.check(result.output.strip("\n"), extension=".csv")
 
     @pandas_2_xfail
+    def test_dataframe_export_to_file(self, file_regression):
+        """Test 'verdi dataframe export --outfile <FILENAME>'
+        Tests that it can be reached and that it exports the contents of the node we have set up
+        to the specified file correctly
+        """
+        TEST_FILE = "result.csv"
+
+        with CliRunner.isolated_filesystem():
+            result = self.runner.invoke(
+                export, [str(self.df_node.pk), '--outfile', TEST_FILE], catch_exceptions=False
+            )
+
+            with open(TEST_FILE) as file:
+                content = file.read()
+
+            #The content of result.csv should be the same as in the test without --outfile
+            file_regression.check(content, basename="test_dataframe_export")
+
+    
+    @pandas_2_xfail
     def test_dataframe_show(self, file_regression):
         """Test 'verdi dataframe show'
         Tests that it can be reached and that it shows the contents of the node
