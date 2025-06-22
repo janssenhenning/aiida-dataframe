@@ -10,6 +10,7 @@ import shutil
 import tempfile
 from typing import Any
 
+from packaging.version import Version
 import pandas as pd
 from pandas.util import hash_pandas_object
 
@@ -58,6 +59,24 @@ class PandasFrameData(SinglefileData):
                 filename = self.filename
             except AttributeError:
                 filename = self.DEFAULT_FILENAME
+
+        if Version(pd.__version__) >= Version("2.0.0") and Version(
+            pd.__version__
+        ) < Version("3.0.0"):
+            # Bug in pandas HDF5 IO concerning timestamps the data type is not correctly roundtripped
+            # This is fixed in pandas 3.0 (once it's released)
+            # See https://github.com/pandas-dev/pandas/issues/59004
+
+            dtypes = df.dtypes.astype("string").values
+            if any(
+                dtype.startswith("datetime64") and dtype != "datetime64[ns]"
+                for dtype in dtypes
+            ):
+                raise ValueError(
+                    "Timestamp entries in a dataframe are not correctly handled in HDF5 IO for pandas 2.X.\n"
+                    "Either convert to datetime64[ns] manually before storing or remove the entry. This issue will be fixed in pandas 3.0\n"
+                    "For more information see https://github.com/pandas-dev/pandas/issues/59004"
+                )
 
         with tempfile.TemporaryDirectory() as td:
             df.to_hdf(Path(td) / self.DEFAULT_FILENAME, "w", format="table")
