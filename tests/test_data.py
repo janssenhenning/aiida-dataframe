@@ -75,7 +75,7 @@ def test_multiindex_columns_roundtrip(entry_point):
     if Version(pd.__version__) >= Version("2.0.0") and Version(pd.__version__) < Version("3.0.0"):
         with pytest.raises(ValueError) as excinfo:
             node = PandasFrameData(df)
-            assert "datetime64" in excinfo.value
+        assert "datetime64" in excinfo.value
     else:
         node = PandasFrameData(df)
         node.store()
