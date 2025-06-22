@@ -48,8 +48,8 @@ testing = [
     "pytest-regressions"
 ]
 pre-commit = [
-    "pre-commit~=2.2",
-    "pylint>=2.5.0,<2.9"
+    "pre-commit>=2.2",
+    "pylint>=2.5.0"
 ]
 docs = [
     "sphinx",
@@ -77,9 +77,6 @@ disable = [
     "too-many-ancestors",
     "invalid-name",
     "duplicate-code",
-    # black compatibility
-    "C0330",
-    "C0326",
 ]
 
 [tool.pytest.ini_options]

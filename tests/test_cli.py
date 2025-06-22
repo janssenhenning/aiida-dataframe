@@ -1,4 +1,6 @@
 """ Tests for command line interface."""
+import traceback
+
 from click.testing import CliRunner
 import numpy as np
 from packaging.version import Version
@@ -45,6 +47,13 @@ class TestDataCli:
         Tests that it can be reached and that it lists the node we have set up.
         """
         result = self.runner.invoke(list_, catch_exceptions=False)
+
+        # Check for success
+        assert result.exception is None, "".join(
+            traceback.format_exception(*result.exc_info)
+        )
+        assert result.exit_code == 0, result.output
+
         assert str(self.df_node.pk) in result.output
 
     @pandas_2_xfail
@@ -56,6 +65,13 @@ class TestDataCli:
         result = self.runner.invoke(
             export, [str(self.df_node.pk)], catch_exceptions=False
         )
+
+        # Check for success
+        assert result.exception is None, "".join(
+            traceback.format_exception(*result.exc_info)
+        )
+        assert result.exit_code == 0, result.output
+
         file_regression.check(result.output.strip("\n"), extension=".csv")
 
     @pandas_2_xfail
@@ -73,7 +89,13 @@ class TestDataCli:
                 catch_exceptions=False,
             )
 
-            with open(TEST_FILE) as file:
+            # Check for success
+            assert result.exception is None, "".join(
+                traceback.format_exception(*result.exc_info)
+            )
+            assert result.exit_code == 0, result.output
+
+            with open(TEST_FILE, encoding="utf-8") as file:
                 content = file.read()
 
             # The content of result.csv should be the same as in the test without --outfile
@@ -90,4 +112,11 @@ class TestDataCli:
         result = self.runner.invoke(
             show, [str(self.df_node.pk)], catch_exceptions=False
         )
+
+        # Check for success
+        assert result.exception is None, "".join(
+            traceback.format_exception(*result.exc_info)
+        )
+        assert result.exit_code == 0, result.output
+
         file_regression.check(result.output)
