@@ -15,7 +15,7 @@ jobs:
         include:
             - python-version: "3.8"
               aiida-version: "aiida-core==1.6.9"
-              pandas-version: "pandas==1.5"
+              pandas-version: "pandas==1.3"
               allowed-to-fail: false
             - python-version: "3.12"
               aiida-version: "aiida-core>=2.6"
