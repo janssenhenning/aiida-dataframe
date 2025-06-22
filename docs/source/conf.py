@@ -14,14 +14,7 @@ import os
 import sys
 import time
 
-from aiida.manage.configuration import load_documentation_profile
-
 import aiida_dataframe
-
-# -- AiiDA-related setup --------------------------------------------------
-
-# Load the dummy documentation profile
-load_documentation_profile()
 
 # -- General configuration ------------------------------------------------
 
