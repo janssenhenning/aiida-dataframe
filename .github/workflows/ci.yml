@@ -9,8 +9,8 @@ jobs:
     timeout-minutes: 30
     strategy:
       matrix:
-        python-version: ["3.7","3.8", "3.9", "3.10", "3.11"] #3.7 will install AiiDA 1.X
-        aiida-version: ["stable"]
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
+        aiida-version: ["stable", "1.6.9"]
       fail-fast: False
 
     services:
@@ -63,10 +63,10 @@ jobs:
     timeout-minutes: 15
     steps:
     - uses: actions/checkout@v4
-    - name: Set up Python 3.10
+    - name: Set up Python 3.12
       uses: actions/setup-python@v4
       with:
-        python-version: "3.10"
+        python-version: "3.12"
     - name: Install python dependencies
       run: |
         pip install --upgrade pip
@@ -79,10 +79,10 @@ jobs:
     timeout-minutes: 15
     steps:
     - uses: actions/checkout@v4
-    - name: Set up Python 3.8
+    - name: Set up Python 3.12
       uses: actions/setup-python@v4
       with:
-        python-version: "3.8"
+        python-version: "3.12"
     - name: Install python dependencies
       run: |
         pip install --upgrade pip
