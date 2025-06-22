@@ -66,7 +66,7 @@ class TestDataCli:
         """
         TEST_FILE = "result.csv"
 
-        with CliRunner.isolated_filesystem():
+        with self.runner.isolated_filesystem():
             result = self.runner.invoke(
                 export, [str(self.df_node.pk), '--outfile', TEST_FILE], catch_exceptions=False
             )
