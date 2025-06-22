@@ -10,20 +10,20 @@ jobs:
     strategy:
       matrix:
         python-version: ["3.8", "3.9", "3.10", "3.11"]
-        aiida-version: [">=2.6"]
-        pandas-version: ["1.5", ">=2.3"]
+        aiida-version: ["aiida-core>=2.6"]
+        pandas-version: ["pandas==1.5", "pandas>=2.3"]
         include:
             - python-version: "3.8"
-              aiida-version: "1.6.9"
-              pandas-version: "1.5"
+              aiida-version: "aiida-core==1.6.9"
+              pandas-version: "pandas==1.5"
               allowed-to-fail: false
             - python-version: "3.12"
-              aiida-version: "latest"
-              pandas-version: "stable"
+              aiida-version: "aiida-core>=2.6"
+              pandas-version: "pandas>=2.3"
               allowed-to-fail: false
             - python-version: "3.13"
-              aiida-version: "latest"
-              pandas-version: "stable"
+              aiida-version: "aiida-core>=2.6"
+              pandas-version: "pandas>=2.3"
               allowed-to-fail: false
       fail-fast: False
 
