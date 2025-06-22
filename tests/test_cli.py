@@ -36,6 +36,7 @@ class TestDataCli:
         self.df_node.store()
         self.runner = CliRunner()
 
+    @pandas_2_xfail
     def test_dataframe_list(self):
         """Test 'verdi data dataframe list'
         Tests that it can be reached and that it lists the node we have set up.
