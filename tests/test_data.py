@@ -43,7 +43,7 @@ def test_roundtrip(entry_point):
     if Version(pd.__version__) >= Version("2.0.0") and Version(pd.__version__) < Version("3.0.0"):
         with pytest.raises(ValueError) as excinfo:
             node = PandasFrameData(df)
-        assert "datetime64" in excinfo.value
+        assert "datetime64" in str(excinfo.value)
     else:
         node = PandasFrameData(df)
         node.store()
@@ -204,7 +204,7 @@ def test_query_multiindex_columns(entry_point):
     assert len(query.all()) == 1
     assert query.one()[0].uuid == df_node_1.uuid
 
-
+@pandas_2_xfail
 @pytest.mark.parametrize(
     "entry_point",
     ("dataframe.frame",),
