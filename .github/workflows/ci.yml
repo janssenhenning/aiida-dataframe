@@ -11,9 +11,19 @@ jobs:
       matrix:
         python-version: ["3.8", "3.9", "3.10", "3.11"]
         aiida-version: ["stable"]
+        pandas-version: ["1.5", "stable"]
         include:
             - python-version: "3.8"
               aiida-version: "1.6.9"
+              pandas-version: "1.5"
+              allowed-to-fail: false
+            - python-version: "3.12"
+              aiida-version: "latest"
+              pandas-version: "stable"
+              allowed-to-fail: false
+            - python-version: "3.13"
+              aiida-version: "latest"
+              pandas-version: "stable"
               allowed-to-fail: false
       fail-fast: False
 
@@ -48,6 +58,7 @@ jobs:
       run: |
         pip install --upgrade pip
         pip install -e .[testing]
+        pip install ${{ matrix.aiida-version }} ${{ matrix.pandas-version }}
         reentry scan || true
 
     - name: Run test suite
