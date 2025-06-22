@@ -10,8 +10,8 @@ jobs:
     strategy:
       matrix:
         python-version: ["3.8", "3.9", "3.10", "3.11"]
-        aiida-version: ["latest"]
-        pandas-version: ["1.5", "latest"]
+        aiida-version: [">=2.6"]
+        pandas-version: ["1.5", ">=2.3"]
         include:
             - python-version: "3.8"
               aiida-version: "1.6.9"
