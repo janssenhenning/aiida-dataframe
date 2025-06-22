@@ -1,4 +1,5 @@
 """ Tests for command line interface."""
+import pytest
 from click.testing import CliRunner
 import numpy as np
 import pandas as pd
