@@ -87,7 +87,7 @@ class PandasFrameData(SinglefileData):
                 filename = self.DEFAULT_FILENAME
 
         # We write the HDF file out to a temporary directory first
-        # to reopen it as a byte IO string as the AiiDA file repository expects
+        # to reopen it as a byte IO stream as the AiiDA file repository expects
         with tempfile.TemporaryDirectory() as td:
             df.to_hdf(Path(td) / filename, "w", format="table")
             with open(Path(td) / filename, "rb") as file:
