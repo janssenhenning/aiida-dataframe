@@ -55,16 +55,14 @@ class PandasFrameData(SinglefileData):
             raise exceptions.ModificationNotAllowed(
                 "cannot update the DataFrame on a stored node"
             )
-        if filename is None:
-            try:
-                filename = self.filename
-            except AttributeError:
-                filename = self.DEFAULT_FILENAME
 
         if Version(pd.__version__) >= Version("2.0.0") and Version(
             pd.__version__
         ) < Version("3.0.0"):
             # Bug in pandas HDF5 IO concerning timestamps the data type is not correctly roundtripped
+            # The only viable way for a user to use this plugin with pandas 2.X and timestamps is to manually make sure
+            # that a conversion is doen before storing the dataframe
+            # We raise an error in this case as we do not want to mess with timestamps if there is a fix on the horizon
             # This is fixed in pandas 3.0 (once it's released)
             # See https://github.com/pandas-dev/pandas/issues/59004
 
@@ -80,10 +78,19 @@ class PandasFrameData(SinglefileData):
                     "For more information see https://github.com/pandas-dev/pandas/issues/59004"
                 )
 
-        with tempfile.TemporaryDirectory() as td:
-            df.to_hdf(Path(td) / self.DEFAULT_FILENAME, "w", format="table")
+        # The filename property on the class might not be set at this point (this happens only after a set_file call)
+        # Therefore a fallback is needed when no filename is specified on this method directly
+        if filename is None:
+            try:
+                filename = self.filename
+            except AttributeError:
+                filename = self.DEFAULT_FILENAME
 
-            with open(Path(td) / self.DEFAULT_FILENAME, "rb") as file:
+        # We write the HDF file out to a temporary directory first
+        # to reopen it as a byte IO stream as the AiiDA file repository expects
+        with tempfile.TemporaryDirectory() as td:
+            df.to_hdf(Path(td) / filename, "w", format="table")
+            with open(Path(td) / filename, "rb") as file:
                 self.set_file(file, filename=filename)
 
         self.set_attribute("_pandas_data_hash", self._hash_dataframe(df))
@@ -103,15 +110,20 @@ class PandasFrameData(SinglefileData):
         Get dataframe associated with this node from the file repository.
         """
         with tempfile.TemporaryDirectory() as td:
-            with open(Path(td) / self.filename, "wb") as temp_handle:
+
+            file_path = Path(td) / self.filename
+
+            # The HDF file is copied into a temporary file, since the file handle of the AiiDA file repository
+            # cannot handle reading starting from the end (as the file repository is compressed),
+            # which the HDF5 IO methods of pandas will do
+            # This only happens once per instance as the dataframe is on the df property after loading
+            with open(file_path, "wb") as temp_handle:
                 with self.open(self.filename, mode="rb") as file:
                     # Copy the content of source to target in chunks
                     shutil.copyfileobj(file, temp_handle)  # type: ignore[arg-type]
 
-            # Workaround for empty dataframe
-            with pd.HDFStore(
-                Path(td) / self.filename, mode="r", errors="strict"
-            ) as store:
+            with pd.HDFStore(file_path, mode="r", errors="strict") as store:
+                # Workaround for empty dataframe to avoid error in pd.read_hdf
                 if len(store.groups()) == 0:
                     return pd.DataFrame([], columns=self.get_attribute("columns"))
                 return pd.read_hdf(store)
@@ -133,6 +145,11 @@ class PandasFrameData(SinglefileData):
     def df(self) -> pd.DataFrame:
         """
         Return the pandas DataFrame instance associated with this node
+
+        If the node is already stored in the database, each access of this
+        property will result in a deep copy of the dataframe being returned
+        to avoid the df property coming out of sync with the underlying HDF file
+        via e.g. in place modifications methods within pandas
         """
         return self._get_dataframe()
 
@@ -147,9 +164,9 @@ class PandasFrameData(SinglefileData):
         """
         Store the node. Before the node is stored
         sync the HDF5 storage with the _df attribute on the node
-        This catches changes to the node made by using setitem
+        This catches changes to the node made by using __setitem__
         on the dataframe e.g. `df["A"] = new_value`
-        This is only done if the hashes of the DATA does not match up
+        This is only done if the hashes of the DATA inside the dataframe does not match up
         """
         if not self.is_stored:
             # Check if the dataframe directly attached to the node

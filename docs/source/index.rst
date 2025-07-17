@@ -12,9 +12,9 @@ The aiida-dataframe plugin for `AiiDA`_
    API documentation <apidoc/aiida_dataframe>
    AiiDA Documentation <https://aiida.readthedocs.io>
 
-If you use this plugin for your research, please cite the following work:
-
-.. highlights:: Author Name1, Author Name2, *Paper title*, Jornal Name XXX, YYYY (Year).
+..
+  If you use this plugin for your research, please cite the following work:
+  .. highlights:: Author Name1, Author Name2, *Paper title*, Jornal Name XXX, YYYY (Year).
 
 If you use AiiDA for your research, please cite the following work:
 
