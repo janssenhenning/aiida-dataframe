@@ -73,8 +73,8 @@ MIT
 henning.janssen@gmx.net
 
 
-[ci-badge]: https://github.com/janssenhenning/aiida-dataframe/workflows/ci/badge.svg?branch=main
-[ci-link]: https://github.com/janssenhenning/aiida-dataframe/actions
+[ci-badge]: https://github.com/janssenhenning/aiida-dataframe/actions/workflows/ci.yml/badge.svg?branch=main
+[ci-link]: https://github.com/janssenhenning/aiida-dataframe/actions/workflows/ci.yml
 [cov-badge]: https://codecov.io/gh/janssenhenning/aiida-dataframe/branch/main/graph/badge.svg
 [cov-link]: https://codecov.io/gh/janssenhenning/aiida-dataframe
 [docs-badge]: https://readthedocs.org/projects/aiida-dataframe/badge
