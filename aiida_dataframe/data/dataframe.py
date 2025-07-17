@@ -118,7 +118,7 @@ class PandasFrameData(SinglefileData):
             # which the HDF5 IO methods of pandas will do
             # This only happens once per instance as the dataframe is on the df property after loading
             with open(file_path, "wb") as temp_handle:
-                with self.open(file_path, mode="rb") as file:
+                with self.open(self.filename, mode="rb") as file:
                     # Copy the content of source to target in chunks
                     shutil.copyfileobj(file, temp_handle)  # type: ignore[arg-type]
 
