@@ -37,7 +37,7 @@ extensions = [
 
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3", None),
-    "aiida": ("https://aiida.readthedocs.io/projects/aiida-core/en/latest", None),
+    "aiida": ("https://aiida.readthedocs.io/projects/aiida-core/en/stable", None),
     "pandas": ("http://pandas.pydata.org/pandas-docs/stable", None),
 }
 
@@ -174,6 +174,12 @@ html_use_opensearch = "https://aiida-dataframe.readthedocs.io"
 #   'nl', 'no', 'pt', 'ro', 'ru', 'sv', 'tr'
 html_search_language = "en"
 
+
+nitpick_ignore_regex = [
+    (r"py:.*", r"aiida.*"),
+    (r"py:.*", r"pydantic.*"),
+    (r"py:.*", r"pandas.*"),
+]
 # Warnings to ignore when using the -n (nitpicky) option
 # We should ignore any python built-in exception, for instance
 nitpick_ignore = [

@@ -18,6 +18,22 @@ pandas_2_xfail = pytest.mark.xfail(
 )
 
 
+def get_test_dataframe():
+    """
+    Example from pandas docs
+    """
+    return pd.DataFrame(
+        {
+            "A": 1.0,
+            "B": pd.Timestamp("20130102"),
+            "C": pd.Series(1, index=list(range(4))),
+            "D": np.array([3] * 4),
+            "E": pd.Categorical(["test", "train", "test", "train"]),
+            "F": "foo",
+        }
+    )
+
+
 @pytest.mark.parametrize(
     "entry_point",
     ("dataframe.frame",),
@@ -28,17 +44,7 @@ def test_roundtrip(entry_point):
     the contents stay the same after retrieving it from the DataBase
     """
 
-    # Example from pandas Docs
-    df = pd.DataFrame(
-        {
-            "A": 1.0,
-            "B": pd.Timestamp("20130102"),
-            "C": pd.Series(1, index=list(range(4)), dtype="float64"),
-            "D": np.array([3] * 4, dtype="int64"),
-            "E": pd.Categorical(["test", "train", "test", "train"]),
-            "F": "foo",
-        }
-    )
+    df = get_test_dataframe()
 
     PandasFrameData = DataFactory(entry_point)
     if Version(pd.__version__) >= Version("2.0.0") and Version(
@@ -65,7 +71,7 @@ def test_multiindex_columns_roundtrip(entry_point):
     """
     Test that MultiIndex columns are correctly reconstructed
     """
-    # Example from pandas docs
+
     df = pd.DataFrame(
         {
             "row": [0, 1, 2],
@@ -121,34 +127,14 @@ def test_query_columns(entry_point):
     """
 
     PandasFrameData = DataFactory(entry_point)
-
-    # Example from pandas Docs
-    df = pd.DataFrame(
-        {
-            "A": 1.0,
-            "B": pd.Timestamp("20130102"),
-            "C": pd.Series(1, index=list(range(4)), dtype="float32"),
-            "D": np.array([3] * 4, dtype="int32"),
-            "E": pd.Categorical(["test", "train", "test", "train"]),
-            "F": "foo",
-        }
-    )
+    df = get_test_dataframe()
 
     df_node_1 = PandasFrameData(df)
     df_node_1.store()
 
-    df = pd.DataFrame(
-        {
-            "A_RENAMED": 1.0,
-            "B": pd.Timestamp("20130102"),
-            "C": pd.Series(1, index=list(range(4)), dtype="float32"),
-            "D": np.array([3] * 4, dtype="int32"),
-            "E": pd.Categorical(["test", "train", "test", "train"]),
-            "F": "foo",
-        }
-    )
-
-    df_node_2 = PandasFrameData(df)
+    df2 = get_test_dataframe()
+    df2 = df2.rename(columns={"A": "A_RENAMED"})
+    df_node_2 = PandasFrameData(df2)
     df_node_2.store()
 
     query = QueryBuilder().append(
@@ -170,7 +156,6 @@ def test_query_multiindex_columns(entry_point):
 
     PandasFrameData = DataFactory(entry_point)
 
-    # Example from pandas Docs
     df = pd.DataFrame(
         {
             "row": [0, 1, 2],
@@ -232,16 +217,7 @@ def test_query_index(entry_point):
     df_node_1 = PandasFrameData(df)
     df_node_1.store()
 
-    df = pd.DataFrame(
-        {
-            "A": 1.0,
-            "B": pd.Timestamp("20130102"),
-            "C": pd.Series(1, index=list(range(4)), dtype="float32"),
-            "D": np.array([3] * 4, dtype="int32"),
-            "E": pd.Categorical(["test", "train", "test", "train"]),
-            "F": "foo",
-        }
-    )
+    df = get_test_dataframe()
 
     df_node_2 = PandasFrameData(df)
     df_node_2.store()
@@ -262,16 +238,10 @@ def test_complex_hdf5(entry_point):
     early before storing the Dataframe
     """
 
-    # Example from pandas Docs
     df = pd.DataFrame(
         {
-            "A": 1.0,
-            "B": pd.Timestamp("20130102"),
-            "C": pd.Series(1, index=list(range(4)), dtype="float32"),
-            "D": np.array([3] * 4, dtype="int32"),
-            "E": pd.Categorical(["test", "train", "test", "train"]),
-            "F": "foo",
-            "G": 1 + 2j,
+            "A": 1 + 2j,
+            "B": np.array([3 + 4j] * 4),
         }
     )
 
@@ -295,7 +265,7 @@ def test_nan_values_hdf5(entry_point):
     df = pd.DataFrame(
         {
             "None": [
-                np.NAN,
+                np.nan,
                 float("NaN"),
                 np.inf,
                 float("inf"),
@@ -344,17 +314,7 @@ def test_modification_after_store(entry_point):
 
     PandasFrameData = DataFactory(entry_point)
 
-    # Example from pandas Docs
-    df = pd.DataFrame(
-        {
-            "A": 1.0,
-            "B": pd.Timestamp("20130102"),
-            "C": pd.Series(1, index=list(range(4)), dtype="float32"),
-            "D": np.array([3] * 4, dtype="int32"),
-            "E": pd.Categorical(["test", "train", "test", "train"]),
-            "F": "foo",
-        }
-    )
+    df = get_test_dataframe()
 
     node = PandasFrameData(df)
     node.store()
@@ -375,17 +335,7 @@ def test_modification_before_store(entry_point):
 
     PandasFrameData = DataFactory(entry_point)
 
-    # Example from pandas Docs
-    df = pd.DataFrame(
-        {
-            "A": 1.0,
-            "B": pd.Timestamp("20130102"),
-            "C": pd.Series(1, index=list(range(4)), dtype="float32"),
-            "D": np.array([3] * 4, dtype="int32"),
-            "E": pd.Categorical(["test", "train", "test", "train"]),
-            "F": "foo",
-        }
-    )
+    df = get_test_dataframe()
 
     node = PandasFrameData(df)
     node.df = node.df.rename({"A": "A_rename"})
@@ -408,17 +358,7 @@ def test_setitem_modification(entry_point):
 
     PandasFrameData = DataFactory(entry_point)
 
-    # Example from pandas Docs
-    df = pd.DataFrame(
-        {
-            "A": 1.0,
-            "B": pd.Timestamp("20130102"),
-            "C": pd.Series(1, index=list(range(4)), dtype="float32"),
-            "D": np.array([3] * 4, dtype="int32"),
-            "E": pd.Categorical(["test", "train", "test", "train"]),
-            "F": "foo",
-        }
-    )
+    df = get_test_dataframe()
     df_changed = df.copy(deep=True)
     df_changed["F"] = ["foo", "foo", "bar", "bar"]
 
@@ -442,7 +382,6 @@ def test_empty_dataframe(entry_point):
 
     PandasFrameData = DataFactory(entry_point)
 
-    # Example from pandas Docs
     df = pd.DataFrame([], columns=["A", "B"])
 
     node = PandasFrameData(df)
@@ -465,17 +404,7 @@ def test_modification_before_instance_update(entry_point):
 
     PandasFrameData = DataFactory(entry_point)
 
-    # Example from pandas Docs
-    df = pd.DataFrame(
-        {
-            "A": 1.0,
-            "B": pd.Timestamp("20130102"),
-            "C": pd.Series(1, index=list(range(4)), dtype="float32"),
-            "D": np.array([3] * 4, dtype="int32"),
-            "E": pd.Categorical(["test", "train", "test", "train"]),
-            "F": "foo",
-        }
-    )
+    df = get_test_dataframe()
     df_changed = df.copy(deep=True)
     df_changed = df_changed.set_index("C")
 
@@ -496,26 +425,16 @@ def test_non_default_filename(entry_point):
 
     PandasFrameData = DataFactory(entry_point)
 
-    # Example from pandas Docs
-    df = pd.DataFrame(
-        {
-            "A": 1.0,
-            "B": pd.Timestamp("20130102"),
-            "C": pd.Series(1, index=list(range(4)), dtype="float32"),
-            "D": np.array([3] * 4, dtype="int32"),
-            "E": pd.Categorical(["test", "train", "test", "train"]),
-            "F": "foo",
-        }
-    )
+    df = get_test_dataframe()
 
     node = PandasFrameData(df, filename="non_default.h5")
     node.store()
 
-    assert node.list_object_names() == ["non_default.h5"]
+    assert node.base.repository.list_object_names() == ["non_default.h5"]
 
     loaded = load_node(node.pk)
     assert loaded is not node
-    assert loaded.list_object_names() == ["non_default.h5"]
+    assert loaded.base.repository.list_object_names() == ["non_default.h5"]
     assert_frame_equal(loaded.df, df)
 
 
@@ -531,18 +450,7 @@ def test_modification_store_already_stored(entry_point):
     """
 
     PandasFrameData = DataFactory(entry_point)
-
-    # Example from pandas Docs
-    df = pd.DataFrame(
-        {
-            "A": 1.0,
-            "B": pd.Timestamp("20130102"),
-            "C": pd.Series(1, index=list(range(4)), dtype="float32"),
-            "D": np.array([3] * 4, dtype="int32"),
-            "E": pd.Categorical(["test", "train", "test", "train"]),
-            "F": "foo",
-        }
-    )
+    df = get_test_dataframe()
 
     node = PandasFrameData(df)
     node.store()
