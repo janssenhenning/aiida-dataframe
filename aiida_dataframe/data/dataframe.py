@@ -89,13 +89,13 @@ class PandasFrameData(SinglefileData):
         # We write the HDF file out to a temporary directory first
         # to reopen it as a byte IO stream as the AiiDA file repository expects
         with tempfile.TemporaryDirectory() as td:
-            df.to_hdf(Path(td) / filename, "w", format="table")
+            df.to_hdf(Path(td) / filename, key="table", mode="w", format="table")
             with open(Path(td) / filename, "rb") as file:
                 self.set_file(file, filename=filename)
 
-        self.set_attribute("_pandas_data_hash", self._hash_dataframe(df))
-        self.set_attribute("index", list(df.index))
-        self.set_attribute("columns", list(df.columns.to_flat_index()))
+        self.base.attributes.set("_pandas_data_hash", self._hash_dataframe(df))
+        self.base.attributes.set("index", list(df.index))
+        self.base.attributes.set("columns", list(df.columns.to_flat_index()))
         self._df = df
 
     @staticmethod
@@ -125,8 +125,8 @@ class PandasFrameData(SinglefileData):
             with pd.HDFStore(file_path, mode="r", errors="strict") as store:
                 # Workaround for empty dataframe to avoid error in pd.read_hdf
                 if len(store.groups()) == 0:
-                    return pd.DataFrame([], columns=self.get_attribute("columns"))
-                return pd.read_hdf(store)
+                    return pd.DataFrame([], columns=self.base.attributes.get("columns"))
+                return pd.read_hdf(store, key="table")
 
     def _get_dataframe(self) -> pd.DataFrame:
         """
@@ -173,7 +173,7 @@ class PandasFrameData(SinglefileData):
             # has been mutated in place before storing
             # If so the underlying file is updated
             current_hash = self._hash_dataframe(self._df)
-            if current_hash != self.get_attribute("_pandas_data_hash"):
+            if current_hash != self.base.attributes.get("_pandas_data_hash"):
                 self._update_dataframe(self._df)
 
         return super().store(*args, **kwargs)
